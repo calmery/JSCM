@@ -46,3 +46,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - Parser
+    - hspec == 2.6.0
