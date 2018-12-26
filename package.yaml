@@ -19,9 +19,13 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/githubuser/Parser#readme>
 
+default-extensions:
+- NoImplicitPrelude
+
 dependencies:
 - base >= 4.7 && < 5
 - parsec == 3.1.13.0
+- rio == 0.1.6.0
 
 library:
   source-dirs: src
