@@ -22,6 +22,9 @@ arithmeticOperatorsSpec =
     it "Remainder" $ do
       parse "1%1" `shouldBe`
         Right (JSModulo (JSNumber 1) (JSNumber 1))
+    it "Exponentiation" $ do
+      parse "1**1" `shouldBe`
+        Right (JSExponentiation (JSNumber 1) (JSNumber 1))
 
 comparisonOperatorsSpec :: Spec
 comparisonOperatorsSpec =

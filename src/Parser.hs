@@ -27,6 +27,7 @@ operatorNames =
   , "*"
   , "/"
   , "%"
+  , "**"
   , "=="
   , "!="
   , "==="
@@ -72,6 +73,7 @@ data Expression
   | JSTimes Expression Expression
   | JSDivide Expression Expression
   | JSModulo Expression Expression
+  | JSExponentiation Expression Expression
   | JSLooseEqual Expression Expression
   | JSLooseNotEqual Expression Expression
   | JSStrictEqual Expression Expression
@@ -88,7 +90,8 @@ expressionParser = buildExpressionParser table termParser
 
 table :: [[Text.Parsec.Expr.Operator String () Identity Expression]]
 table =
-  [ [ Infix (reservedOperatorNames "*" >> return JSTimes) AssocLeft
+  [ [ Infix (reservedOperatorNames "**" >> return JSExponentiation) AssocLeft
+    , Infix (reservedOperatorNames "*" >> return JSTimes) AssocLeft
     , Infix (reservedOperatorNames "/" >> return JSDivide) AssocLeft
     , Infix (reservedOperatorNames "%" >> return JSModulo) AssocLeft
     ]
