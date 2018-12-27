@@ -9,5 +9,5 @@ main = loop
   where
     loop = do
       input <- getLine
-      putStrLn $ parse input
+      putStrLn . show $ parse input
       loop

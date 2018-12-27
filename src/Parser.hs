@@ -11,14 +11,8 @@ import           Text.Parsec.Token    (LanguageDef, TokenParser,
                                        reservedOpNames)
 import qualified Text.Parsec.Token    as Token
 
-parse :: String -> String
-parse input =
-  case Parsec.parse expressionParser "JavaScript" input of
-    Left error ->
-      show error
-
-    Right formula ->
-      show formula
+parse :: String -> Either Parsec.ParseError Expression
+parse = Parsec.parse expressionParser "JavaScript"
 
 keywords :: [String]
 keywords =
