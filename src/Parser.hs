@@ -7,7 +7,8 @@ import           Text.Parsec.Expr     (Assoc (AssocLeft), Operator (Infix),
 import           Text.Parsec.Language (emptyDef)
 import           Text.Parsec.String   (Parser)
 import           Text.Parsec.Token    (LanguageDef, TokenParser,
-                                       makeTokenParser, reservedOpNames)
+                                       makeTokenParser, reservedNames,
+                                       reservedOpNames)
 import qualified Text.Parsec.Token    as Token
 
 parse :: String -> String
@@ -19,6 +20,12 @@ parse input =
     Right formula ->
       show formula
 
+keywords :: [String]
+keywords =
+  [ "true"
+  , "false"
+  ]
+
 operatorNames :: [String]
 operatorNames =
   [ "+"
@@ -26,21 +33,43 @@ operatorNames =
   , "*"
   , "/"
   , "%"
+  , "=="
+  , "!="
+  , "==="
+  , "!=="
+  , ">"
+  , ">="
+  , "<"
+  , "<="
   ]
 
 languageDef :: LanguageDef st
 languageDef = emptyDef
-  { reservedOpNames = operatorNames
+  { reservedNames = keywords
+  , reservedOpNames = operatorNames
   }
 
 tokenParser :: TokenParser ()
 tokenParser = makeTokenParser languageDef
 
-integer :: Parser Integer
-integer = Token.integer tokenParser
+reservedKeywords :: String -> Parser ()
+reservedKeywords = Token.reserved tokenParser
 
 reservedOperatorNames :: String -> Parsec.ParsecT String () Identity ()
 reservedOperatorNames = Token.reservedOp tokenParser
+
+boolean :: Parser Expression
+boolean = true <|> false
+  where
+    true = do
+      reservedKeywords "true"
+      return $ JSBoolean True
+    false = do
+      reservedKeywords "false"
+      return $ JSBoolean False
+
+integer :: Parser Integer
+integer = Token.integer tokenParser
 
 data Expression
   = JSNumber Integer
@@ -49,6 +78,15 @@ data Expression
   | JSTimes Expression Expression
   | JSDivide Expression Expression
   | JSModulo Expression Expression
+  | JSLooseEqual Expression Expression
+  | JSLooseNotEqual Expression Expression
+  | JSStrictEqual Expression Expression
+  | JSStrictNotEqual Expression Expression
+  | JSGreater Expression Expression
+  | JSGreaterOrEqual Expression Expression
+  | JSLess Expression Expression
+  | JSLessOrEqual Expression Expression
+  | JSBoolean Bool
   deriving Show
 
 expressionParser :: Parser Expression
@@ -63,7 +101,17 @@ table =
   , [ Infix (reservedOperatorNames "+" >> return JSPlus) AssocLeft
     , Infix (reservedOperatorNames "-" >> return JSMinus) AssocLeft
     ]
+  , [ Infix (reservedOperatorNames ">" >> return JSGreater) AssocLeft
+    , Infix (reservedOperatorNames ">=" >> return JSGreaterOrEqual) AssocLeft
+    , Infix (reservedOperatorNames "<" >> return JSLess) AssocLeft
+    , Infix (reservedOperatorNames "<=" >> return JSLessOrEqual) AssocLeft
+    ]
+  , [ Infix (reservedOperatorNames "==" >> return JSLooseEqual) AssocLeft
+    , Infix (reservedOperatorNames "!=" >> return JSLooseNotEqual) AssocLeft
+    , Infix (reservedOperatorNames "===" >> return JSStrictEqual) AssocLeft
+    , Infix (reservedOperatorNames "!==" >> return JSStrictNotEqual) AssocLeft
+    ]
   ]
 
 termParser :: Parser Expression
-termParser = JSNumber <$> integer
+termParser = boolean <|> (JSNumber <$> integer)
