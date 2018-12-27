@@ -25,6 +25,7 @@ operatorNames =
   , "-"
   , "*"
   , "/"
+  , "%"
   ]
 
 languageDef :: LanguageDef st
@@ -47,6 +48,7 @@ data Expression
   | JSMinus Expression Expression
   | JSTimes Expression Expression
   | JSDivide Expression Expression
+  | JSModulo Expression Expression
   deriving Show
 
 expressionParser :: Parser Expression
@@ -56,6 +58,7 @@ table :: [[Text.Parsec.Expr.Operator String () Identity Expression]]
 table =
   [ [ Infix (reservedOperatorNames "*" >> return JSTimes) AssocLeft
     , Infix (reservedOperatorNames "/" >> return JSDivide) AssocLeft
+    , Infix (reservedOperatorNames "%" >> return JSModulo) AssocLeft
     ]
   , [ Infix (reservedOperatorNames "+" >> return JSPlus) AssocLeft
     , Infix (reservedOperatorNames "-" >> return JSMinus) AssocLeft
