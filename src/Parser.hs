@@ -1,4 +1,4 @@
-module Parser (parse) where
+module Parser (parse, Expression(..)) where
 
 import           RIO
 import qualified Text.Parsec          as Parsec
@@ -81,7 +81,7 @@ data Expression
   | JSLess Expression Expression
   | JSLessOrEqual Expression Expression
   | JSBoolean Bool
-  deriving Show
+  deriving (Eq, Show)
 
 expressionParser :: Parser Expression
 expressionParser = buildExpressionParser table termParser
