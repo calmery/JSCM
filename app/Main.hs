@@ -1,7 +1,13 @@
 module Main where
 
-import           Lib
+import           Parser    (parse)
 import           RIO
+import           System.IO
 
 main :: IO ()
-main = someFunc
+main = loop
+  where
+    loop = do
+      input <- getLine
+      putStrLn $ parse input
+      loop
