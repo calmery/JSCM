@@ -25,6 +25,11 @@ arithmeticOperatorsSpec =
     it "Exponentiation" $ do
       parse "1**1" `shouldBe`
         Right (JSBody [JSExponentiation (JSNumber 1) (JSNumber 1)])
+    it "Parentheses" $ do
+      parse "(1+2)*3" `shouldBe`
+        Right (JSBody [JSTimes (JSPlus (JSNumber 1) (JSNumber 2)) (JSNumber 3)])
+      parse "(1+2)/3" `shouldBe`
+        Right (JSBody [JSDivide (JSPlus (JSNumber 1) (JSNumber 2)) (JSNumber 3)])
 
 comparisonOperatorsSpec :: Spec
 comparisonOperatorsSpec =

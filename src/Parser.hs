@@ -54,6 +54,8 @@ reservedKeywords = Token.reserved tokenParser
 reservedOperatorNames :: String -> Parsec.ParsecT String () Identity ()
 reservedOperatorNames = Token.reservedOp tokenParser
 
+parens = Token.parens tokenParser
+
 boolean :: Parser Expression
 boolean = true <|> false
   where
@@ -118,4 +120,4 @@ table =
   ]
 
 termParser :: Parser Expression
-termParser = boolean <|> (JSNumber <$> integer)
+termParser = parens expressionParser <|> boolean <|> (JSNumber <$> integer)
