@@ -71,9 +71,20 @@ whileStatementSpec =
     parse "while (true) 1 + 1" `shouldBe`
       Right (JSProgram [JSWhile (JSBoolean True) (JSPlus (JSNumber 1) (JSNumber 1))])
 
+ifStatementSpec :: Spec
+ifStatementSpec =
+  it "If Statement" $ do
+    parse "if (true) { 1 + 1 } else { 2 + 2 }" `shouldBe`
+      Right (JSProgram [JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) (Just (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]))])
+    parse "if (true) { 1 + 1 } else if (true) { 2 + 2 }" `shouldBe`
+      Right (JSProgram [JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) (Just (JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]) Nothing))])
+    parse "if (true) { 1 + 1 } else if (true) { 2 + 2 } else { 3 + 3 }" `shouldBe`
+      Right (JSProgram [JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) (Just (JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]) (Just (JSBlock [JSPlus (JSNumber 3) (JSNumber 3)]))))])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
     arithmeticOperatorsSpec
     comparisonOperatorsSpec
     whileStatementSpec
+    ifStatementSpec

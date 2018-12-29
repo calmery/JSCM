@@ -1,16 +1,17 @@
 module Parser (parse, Expression(..)) where
 
-import           RIO                  hiding (many)
-import           Text.Parsec          (many)
-import qualified Text.Parsec          as Parsec
-import           Text.Parsec.Expr     (Assoc (AssocLeft), Operator (Infix),
-                                       buildExpressionParser)
-import           Text.Parsec.Language (emptyDef)
-import           Text.Parsec.String   (Parser)
-import           Text.Parsec.Token    (LanguageDef, TokenParser,
-                                       makeTokenParser, reservedNames,
-                                       reservedOpNames)
-import qualified Text.Parsec.Token    as Token
+import           RIO                    hiding (many)
+import           Text.Parsec            (many)
+import qualified Text.Parsec            as Parsec
+import           Text.Parsec.Combinator (optionMaybe)
+import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
+                                         buildExpressionParser)
+import           Text.Parsec.Language   (emptyDef)
+import           Text.Parsec.String     (Parser)
+import           Text.Parsec.Token      (LanguageDef, TokenParser,
+                                         makeTokenParser, reservedNames,
+                                         reservedOpNames)
+import qualified Text.Parsec.Token      as Token
 
 parse :: String -> Either Parsec.ParseError Expression
 parse = Parsec.parse programParser "JavaScript"
@@ -22,6 +23,8 @@ keywords =
   , "while"
   , "continue"
   , "break"
+  , "if"
+  , "else"
   ]
 
 operatorNames :: [String]
@@ -95,6 +98,7 @@ data Expression
   | JSWhile Expression Expression
   | JSContinue
   | JSBreak
+  | JSIf Expression Expression (Maybe Expression)
   deriving (Eq, Show)
 
 programParser :: Parser Expression
@@ -133,6 +137,7 @@ termParser = parens expressionParser
   <|> whileParser
   <|> continueParser
   <|> breakParser
+  <|> ifParser
   <|> boolean
   <|> (JSNumber <$> integer)
 
@@ -145,8 +150,7 @@ whileParser :: Parser Expression
 whileParser = do
   reservedKeywords "while"
   expression <- parens expressionParser
-  block <- expressionParser
-  return $ JSWhile expression block
+  JSWhile expression <$> expressionParser
 
 continueParser :: Parser Expression
 continueParser = do
@@ -157,3 +161,13 @@ breakParser :: Parser Expression
 breakParser = do
   reservedKeywords "break"
   return JSBreak
+
+ifParser :: Parser Expression
+ifParser = do
+  reservedKeywords "if"
+  expression <- parens expressionParser
+  block <- expressionParser
+  elseBlock <- optionMaybe $ do
+    reservedKeywords "else"
+    expressionParser
+  return $ JSIf expression block elseBlock
