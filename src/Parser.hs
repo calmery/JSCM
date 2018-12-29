@@ -13,7 +13,7 @@ import           Text.Parsec.Token    (LanguageDef, TokenParser,
 import qualified Text.Parsec.Token    as Token
 
 parse :: String -> Either Parsec.ParseError Expression
-parse = Parsec.parse bodyParser "JavaScript"
+parse = Parsec.parse programParser "JavaScript"
 
 keywords :: [String]
 keywords =
@@ -74,7 +74,8 @@ integer :: Parser Integer
 integer = Token.integer tokenParser
 
 data Expression
-  = JSBody [Expression]
+  = JSProgram [Expression]
+  | JSBlock [Expression]
   | JSNumber Integer
   | JSPlus Expression Expression
   | JSMinus Expression Expression
@@ -96,10 +97,10 @@ data Expression
   | JSBreak
   deriving (Eq, Show)
 
-bodyParser :: Parser Expression
-bodyParser = do
+programParser :: Parser Expression
+programParser = do
   expressions <- many expressionParser
-  return $ JSBody expressions
+  return $ JSProgram expressions
 
 expressionParser :: Parser Expression
 expressionParser = buildExpressionParser table termParser
@@ -128,18 +129,24 @@ table =
 
 termParser :: Parser Expression
 termParser = parens expressionParser
+  <|> blockParser
   <|> whileParser
   <|> continueParser
   <|> breakParser
   <|> boolean
   <|> (JSNumber <$> integer)
 
+blockParser :: Parser Expression
+blockParser = do
+  expressions <- braces $ many expressionParser
+  return $ JSBlock expressions
+
 whileParser :: Parser Expression
 whileParser = do
   reservedKeywords "while"
   expression <- parens expressionParser
-  body <- braces bodyParser
-  return $ JSWhile expression body
+  block <- expressionParser
+  return $ JSWhile expression block
 
 continueParser :: Parser Expression
 continueParser = do
