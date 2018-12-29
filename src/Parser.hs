@@ -3,6 +3,7 @@ module Parser (parse, Expression(..)) where
 import           RIO                    hiding (many, optional)
 import           Text.Parsec            (many)
 import qualified Text.Parsec            as Parsec
+import           Text.Parsec.Char       (char)
 import           Text.Parsec.Combinator (optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
                                          buildExpressionParser)
@@ -26,6 +27,8 @@ keywords =
   , "if"
   , "else"
   , "for"
+  , "try"
+  , "catch"
   ]
 
 operatorNames :: [String]
@@ -103,6 +106,7 @@ data Expression
   | JSIf Expression Expression (Maybe Expression)
   | JSFor (Expression, Expression, Expression) Expression
   | JSEmpty
+  | JSTryCatch Expression Expression Expression
   deriving (Eq, Show)
 
 programParser :: Parser Expression
@@ -143,6 +147,7 @@ termParser = parens expressionParser
   <|> breakParser
   <|> ifParser
   <|> forParser
+  <|> tryCatchParser
   <|> boolean
   <|> (JSNumber <$> integer)
 
@@ -194,3 +199,16 @@ forParser = do
       return expression
     empty =
       return JSEmpty
+
+tryCatchParser :: Parser Expression
+tryCatchParser = do
+  reservedKeywords "try"
+  tryBlock <- braces $ do
+    block <- many expressionParser
+    return $ JSBlock block
+  reservedKeywords "catch"
+  arguments <- parens $ return JSEmpty
+  catchBlock <- braces $ do
+    block <- many expressionParser
+    return $ JSBlock block
+  return $ JSTryCatch tryBlock arguments catchBlock
