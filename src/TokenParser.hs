@@ -2,7 +2,8 @@ module TokenParser (tokenParser) where
 
 import           RIO
 import           Text.Parsec.Language (emptyDef)
-import           Text.Parsec.Token    (LanguageDef, TokenParser,
+import           Text.Parsec.Token    (LanguageDef, TokenParser, commentEnd,
+                                       commentLine, commentStart,
                                        makeTokenParser, reservedNames,
                                        reservedOpNames)
 
@@ -43,7 +44,10 @@ operatorNames =
 
 languageDef :: LanguageDef st
 languageDef = emptyDef
-  { reservedNames = keywords
+  { commentStart = "/*"
+  , commentEnd = "*/"
+  , commentLine = "//"
+  , reservedNames = keywords
   , reservedOpNames = operatorNames
   }
 

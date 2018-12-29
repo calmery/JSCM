@@ -4,6 +4,16 @@ import           Parser     (Expression (..), parse)
 import           RIO
 import           Test.Hspec
 
+commentSpec :: Spec
+commentSpec =
+  it "Comment" $ do
+    parse "1 + 1 // Hello World 2 + 2" `shouldBe`
+      Right (JSProgram [JSPlus (JSNumber 1) (JSNumber 1)])
+    parse "1 + 1 /* Hello World */ 2 + 2" `shouldBe`
+      Right (JSProgram [JSPlus (JSNumber 1) (JSNumber 1), JSPlus (JSNumber 2) (JSNumber 2)])
+    parse "1 + 1 /* /* Hello World */ */ 2 + 2" `shouldBe`
+      Right (JSProgram [JSPlus (JSNumber 1) (JSNumber 1), JSPlus (JSNumber 2) (JSNumber 2)])
+
 arithmeticOperatorsSpec :: Spec
 arithmeticOperatorsSpec =
   describe "Arithmetic operators" $ do
@@ -108,6 +118,7 @@ switchStatementSpec =
 spec :: Spec
 spec =
   describe "JavaScript" $ do
+    commentSpec
     arithmeticOperatorsSpec
     comparisonOperatorsSpec
     whileStatementSpec
