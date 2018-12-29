@@ -208,18 +208,13 @@ forParser = do
 tryCatchParser :: Parser Expression
 tryCatchParser = do
   reservedKeywords "try"
-  tryBlock <- braces $ do
-    block <- many expressionParser
-    return $ JSBlock block
+  tryBlock <- braces expressionsParser
   reservedKeywords "catch"
   arguments <- parens $ return JSEmpty
-  catchBlock <- braces $ do
-    block <- many expressionParser
-    return $ JSBlock block
+  catchBlock <- braces expressionsParser
   finallyBlock <- optionMaybe $ do
     reservedKeywords "finally"
-    block <- braces $ many expressionParser
-    return $ JSBlock block
+    braces expressionsParser
   return $ JSTryCatch tryBlock arguments catchBlock finallyBlock
 
 switchParser :: Parser Expression
