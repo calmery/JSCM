@@ -7,82 +7,14 @@ import           Text.Parsec.Char       (char)
 import           Text.Parsec.Combinator (optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
                                          buildExpressionParser)
-import           Text.Parsec.Language   (emptyDef)
 import           Text.Parsec.String     (Parser)
-import           Text.Parsec.Token      (LanguageDef, TokenParser,
-                                         makeTokenParser, reservedNames,
-                                         reservedOpNames)
 import qualified Text.Parsec.Token      as Token
+import           TokenParser            (tokenParser)
 
 parse :: String -> Either Parsec.ParseError Expression
 parse = Parsec.parse programParser "JavaScript"
 
-keywords :: [String]
-keywords =
-  [ "true"
-  , "false"
-  , "while"
-  , "continue"
-  , "break"
-  , "if"
-  , "else"
-  , "for"
-  , "try"
-  , "catch"
-  , "switch"
-  , "case"
-  , "default"
-  ]
-
-operatorNames :: [String]
-operatorNames =
-  [ "+"
-  , "-"
-  , "*"
-  , "/"
-  , "%"
-  , "**"
-  , "=="
-  , "!="
-  , "==="
-  , "!=="
-  , ">"
-  , ">="
-  , "<"
-  , "<="
-  ]
-
-languageDef :: LanguageDef st
-languageDef = emptyDef
-  { reservedNames = keywords
-  , reservedOpNames = operatorNames
-  }
-
-tokenParser :: TokenParser ()
-tokenParser = makeTokenParser languageDef
-
-reservedKeywords :: String -> Parser ()
-reservedKeywords = Token.reserved tokenParser
-
-reservedOperatorNames :: String -> Parsec.ParsecT String () Identity ()
-reservedOperatorNames = Token.reservedOp tokenParser
-
-parens = Token.parens tokenParser
-braces = Token.braces tokenParser
-semi = Token.semi tokenParser
-
-boolean :: Parser Expression
-boolean = true <|> false
-  where
-    true = do
-      reservedKeywords "true"
-      return $ JSBoolean True
-    false = do
-      reservedKeywords "false"
-      return $ JSBoolean False
-
-integer :: Parser Integer
-integer = Token.integer tokenParser
+-- Data
 
 data Expression
   = JSProgram [Expression]
@@ -115,38 +47,56 @@ data Expression
   | JSDefault Expression
   deriving (Eq, Show)
 
+-- Token Parsers
+
+reserved :: String -> Parser ()
+reserved = Token.reserved tokenParser
+
+reservedOp :: String -> Parsec.ParsecT String () Identity ()
+reservedOp = Token.reservedOp tokenParser
+
+parens = Token.parens tokenParser
+braces = Token.braces tokenParser
+semi = Token.semi tokenParser
+
+-- Parsers
+
 programParser :: Parser Expression
 programParser = do
   expressions <- many expressionParser
   return $ JSProgram expressions
 
+expressionsParser :: Parser Expression
+expressionsParser = do
+  expressions <- many expressionParser
+  return $ JSBlock expressions
+
 expressionParser :: Parser Expression
-expressionParser = buildExpressionParser table termParser
+expressionParser = buildExpressionParser table parsers
+  where
+    table =
+      [ [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
+        , Infix (reservedOp "*" >> return JSTimes) AssocLeft
+        , Infix (reservedOp "/" >> return JSDivide) AssocLeft
+        , Infix (reservedOp "%" >> return JSModulo) AssocLeft
+        ]
+      , [ Infix (reservedOp "+" >> return JSPlus) AssocLeft
+        , Infix (reservedOp "-" >> return JSMinus) AssocLeft
+        ]
+      , [ Infix (reservedOp ">" >> return JSGreater) AssocLeft
+        , Infix (reservedOp ">=" >> return JSGreaterOrEqual) AssocLeft
+        , Infix (reservedOp "<" >> return JSLess) AssocLeft
+        , Infix (reservedOp "<=" >> return JSLessOrEqual) AssocLeft
+        ]
+      , [ Infix (reservedOp "==" >> return JSLooseEqual) AssocLeft
+        , Infix (reservedOp "!=" >> return JSLooseNotEqual) AssocLeft
+        , Infix (reservedOp "===" >> return JSStrictEqual) AssocLeft
+        , Infix (reservedOp "!==" >> return JSStrictNotEqual) AssocLeft
+        ]
+      ]
 
-table :: [[Text.Parsec.Expr.Operator String () Identity Expression]]
-table =
-  [ [ Infix (reservedOperatorNames "**" >> return JSExponentiation) AssocLeft
-    , Infix (reservedOperatorNames "*" >> return JSTimes) AssocLeft
-    , Infix (reservedOperatorNames "/" >> return JSDivide) AssocLeft
-    , Infix (reservedOperatorNames "%" >> return JSModulo) AssocLeft
-    ]
-  , [ Infix (reservedOperatorNames "+" >> return JSPlus) AssocLeft
-    , Infix (reservedOperatorNames "-" >> return JSMinus) AssocLeft
-    ]
-  , [ Infix (reservedOperatorNames ">" >> return JSGreater) AssocLeft
-    , Infix (reservedOperatorNames ">=" >> return JSGreaterOrEqual) AssocLeft
-    , Infix (reservedOperatorNames "<" >> return JSLess) AssocLeft
-    , Infix (reservedOperatorNames "<=" >> return JSLessOrEqual) AssocLeft
-    ]
-  , [ Infix (reservedOperatorNames "==" >> return JSLooseEqual) AssocLeft
-    , Infix (reservedOperatorNames "!=" >> return JSLooseNotEqual) AssocLeft
-    , Infix (reservedOperatorNames "===" >> return JSStrictEqual) AssocLeft
-    , Infix (reservedOperatorNames "!==" >> return JSStrictNotEqual) AssocLeft
-    ]
-  ]
-
-termParser :: Parser Expression
-termParser = parens expressionParser
+parsers :: Parser Expression
+parsers = parensParser
   <|> blockParser
   <|> whileParser
   <|> ifParser
@@ -154,72 +104,59 @@ termParser = parens expressionParser
   <|> tryCatchParser
   <|> switchParser
   <|> do
-    v <- continueParser <|> breakParser <|> boolean <|> (JSNumber <$> integer)
+    value <- continueParser <|> breakParser <|> boolean <|> (JSNumber <$> integer)
     optional semi
-    return v
+    return value
+
+-- Statements
+
+parensParser :: Parser Expression
+parensParser = parens expressionParser -- 括弧付き
 
 blockParser :: Parser Expression
-blockParser = braces expressionsParser
-
-expressionsParser :: Parser Expression
-expressionsParser = do
-  expressions <- many expressionParser
-  return $ JSBlock expressions
+blockParser = braces expressionsParser -- 複数行のソースコードをパースする
 
 whileParser :: Parser Expression
 whileParser = do
-  reservedKeywords "while"
+  reserved "while"
   expression <- parens expressionParser
   JSWhile expression <$> expressionParser
 
-continueParser :: Parser Expression
-continueParser = do
-  reservedKeywords "continue"
-  return JSContinue
-
-breakParser :: Parser Expression
-breakParser = do
-  reservedKeywords "break"
-  return JSBreak
-
 ifParser :: Parser Expression
 ifParser = do
-  reservedKeywords "if"
+  reserved "if"
   expression <- parens expressionParser
-  block <- expressionParser
-  elseBlock <- optionMaybe $ do
-    reservedKeywords "else"
+  expressions <- expressionParser
+  elseExpressions <- optionMaybe $ do
+    reserved "else"
     expressionParser
-  return $ JSIf expression block elseBlock
+  return $ JSIf expression expressions elseExpressions
 
 forParser :: Parser Expression
 forParser = do
-  reservedKeywords "for"
+  reserved "for"
   expressions <- parens $ do
-    one <- expressionParser <|> semi *> empty
-    two <- expressionParser <|> semi *> empty
-    three <- expressionParser <|> empty
+    one <- expressionParser <|> semi $> JSEmpty
+    two <- expressionParser <|> semi $> JSEmpty
+    three <- expressionParser <|> return JSEmpty
     return (one, two, three)
   JSFor expressions <$> expressionParser
-  where
-    empty =
-      return JSEmpty
 
 tryCatchParser :: Parser Expression
 tryCatchParser = do
-  reservedKeywords "try"
-  tryBlock <- braces expressionsParser
-  reservedKeywords "catch"
-  arguments <- parens $ return JSEmpty
-  catchBlock <- braces expressionsParser
-  finallyBlock <- optionMaybe $ do
-    reservedKeywords "finally"
-    braces expressionsParser
-  return $ JSTryCatch tryBlock arguments catchBlock finallyBlock
+  reserved "try"
+  tryExpressions <- expressionParser
+  reserved "catch"
+  _ <- parens $ return JSEmpty -- catch の引数
+  catchExpressions <- expressionParser
+  finallyExpressions <- optionMaybe $ do
+    reserved "finally"
+    expressionParser
+  return $ JSTryCatch tryExpressions JSEmpty catchExpressions finallyExpressions
 
 switchParser :: Parser Expression
 switchParser = do
-  reservedKeywords "switch"
+  reserved "switch"
   expression <- parens expressionParser
   block <- braces switchBlockParser
   return $ JSSwitch expression block
@@ -228,11 +165,36 @@ switchParser = do
       expressions <- many $ switchCaseParser <|> switchDefaultParser
       return $ JSBlock expressions
     switchCaseParser = do
-      reservedKeywords "case"
+      reserved "case"
       expression <- expressionParser
       char ':'
       JSCase expression <$> expressionsParser
     switchDefaultParser = do
-      reservedKeywords "default"
+      reserved "default"
       char ':'
       JSDefault <$> expressionsParser
+
+-- Values
+
+continueParser :: Parser Expression
+continueParser = do
+  reserved "continue"
+  return JSContinue
+
+breakParser :: Parser Expression
+breakParser = do
+  reserved "break"
+  return JSBreak
+
+boolean :: Parser Expression
+boolean = true <|> false
+  where
+    true = do
+      reserved "true"
+      return $ JSBoolean True
+    false = do
+      reserved "false"
+      return $ JSBoolean False
+
+integer :: Parser Integer
+integer = Token.integer tokenParser

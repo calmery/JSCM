@@ -89,8 +89,8 @@ forStatementSpec =
     parse "for (;;) { 1 + 1 }" `shouldBe`
       Right (JSProgram [JSFor (JSEmpty, JSEmpty, JSEmpty) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)])])
 
-tryCatchSpec :: Spec
-tryCatchSpec =
+tryCatchStatementSpec :: Spec
+tryCatchStatementSpec =
   it "Try Catch Statement" $ do
     parse "try { 1 + 1 } catch () { 2 + 2 }" `shouldBe`
       Right (JSProgram [JSTryCatch (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) JSEmpty (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]) Nothing])
@@ -113,5 +113,5 @@ spec =
     whileStatementSpec
     ifStatementSpec
     forStatementSpec
-    tryCatchSpec
+    tryCatchStatementSpec
     switchStatementSpec
