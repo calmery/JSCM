@@ -14,6 +14,22 @@ commentSpec =
     parse "1 + 1 /* /* Hello World */ */ 2 + 2" `shouldBe`
       Right (JSProgram [JSPlus (JSNumber 1) (JSNumber 1), JSPlus (JSNumber 2) (JSNumber 2)])
 
+stringLiteralSpec :: Spec
+stringLiteralSpec =
+  it "String Literal" $ do
+    parse "\"a\"" `shouldBe`
+      Right (JSProgram [JSString "a"])
+    parse "\"abc\"" `shouldBe`
+      Right (JSProgram [JSString "abc"])
+    parse "\"\\\"abc\\\"\"" `shouldBe`
+      Right (JSProgram [JSString "\\\"abc\\\""])
+    parse "'a'" `shouldBe`
+      Right (JSProgram [JSString "a"])
+    parse "'abc'" `shouldBe`
+      Right (JSProgram [JSString "abc"])
+    parse "'\\'abc\\''" `shouldBe`
+      Right (JSProgram [JSString "\\'abc\\'"])
+
 arithmeticOperatorsSpec :: Spec
 arithmeticOperatorsSpec =
   describe "Arithmetic operators" $ do
@@ -119,6 +135,7 @@ spec :: Spec
 spec =
   describe "JavaScript" $ do
     commentSpec
+    stringLiteralSpec
     arithmeticOperatorsSpec
     comparisonOperatorsSpec
     whileStatementSpec

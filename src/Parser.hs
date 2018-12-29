@@ -1,9 +1,10 @@
 module Parser (parse, Expression(..)) where
 
 import           RIO                    hiding (many, optional)
-import           Text.Parsec            (many)
+import           Text.Parsec            (many, skipMany)
 import qualified Text.Parsec            as Parsec
-import           Text.Parsec.Char       (char)
+import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space,
+                                         tab)
 import           Text.Parsec.Combinator (optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
                                          buildExpressionParser)
@@ -45,6 +46,7 @@ data Expression
   | JSSwitch Expression Expression
   | JSCase Expression Expression
   | JSDefault Expression
+  | JSString String
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -104,7 +106,11 @@ parsers = parensParser
   <|> tryCatchParser
   <|> switchParser
   <|> do
-    value <- continueParser <|> breakParser <|> boolean <|> (JSNumber <$> integer)
+    value <- continueParser
+      <|> breakParser
+      <|> boolean
+      <|> integer
+      <|> string
     optional semi
     return value
 
@@ -196,5 +202,22 @@ boolean = true <|> false
       reserved "false"
       return $ JSBoolean False
 
-integer :: Parser Integer
-integer = Token.integer tokenParser
+integer :: Parser Expression
+integer = do
+  xs <- Token.integer tokenParser
+  return $ JSNumber xs
+
+string :: Parser Expression
+string = do
+  singleOrDouble <- char '"' <|> char '\''
+  let targets = singleOrDouble:['\\', '\n', '\r', '\v', '\t', '\b', '\f']
+  xxs <- many $ do
+    x <- noneOf targets
+    return [x]
+    <|> do
+      backslashes <- char '\\'
+      target <- oneOf targets
+      return [backslashes, target]
+  char singleOrDouble
+  skipMany $ space <|> tab <|> newline
+  return $ JSString $ concat xxs
