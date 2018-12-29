@@ -106,7 +106,7 @@ data Expression
   | JSIf Expression Expression (Maybe Expression)
   | JSFor (Expression, Expression, Expression) Expression
   | JSEmpty
-  | JSTryCatch Expression Expression Expression
+  | JSTryCatch Expression Expression Expression (Maybe Expression)
   deriving (Eq, Show)
 
 programParser :: Parser Expression
@@ -211,4 +211,8 @@ tryCatchParser = do
   catchBlock <- braces $ do
     block <- many expressionParser
     return $ JSBlock block
-  return $ JSTryCatch tryBlock arguments catchBlock
+  finallyBlock <- optionMaybe $ do
+    reservedKeywords "finally"
+    block <- braces $ many expressionParser
+    return $ JSBlock block
+  return $ JSTryCatch tryBlock arguments catchBlock finallyBlock
