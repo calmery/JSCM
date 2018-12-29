@@ -81,6 +81,14 @@ ifStatementSpec =
     parse "if (true) { 1 + 1 } else if (true) { 2 + 2 } else { 3 + 3 }" `shouldBe`
       Right (JSProgram [JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) (Just (JSIf (JSBoolean True) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]) (Just (JSBlock [JSPlus (JSNumber 3) (JSNumber 3)]))))])
 
+forStatementSpec :: Spec
+forStatementSpec =
+  it "For Statement" $ do
+    parse "for (true; true; true) { 1 + 1 }" `shouldBe`
+      Right (JSProgram [JSFor (JSBoolean True, JSBoolean True, JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)])])
+    parse "for (;;) { 1 + 1 }" `shouldBe`
+      Right (JSProgram [JSFor (JSEmpty, JSEmpty, JSEmpty) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)])])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -88,3 +96,4 @@ spec =
     comparisonOperatorsSpec
     whileStatementSpec
     ifStatementSpec
+    forStatementSpec

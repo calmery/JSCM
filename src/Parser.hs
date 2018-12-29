@@ -1,9 +1,9 @@
 module Parser (parse, Expression(..)) where
 
-import           RIO                    hiding (many)
+import           RIO                    hiding (many, optional)
 import           Text.Parsec            (many)
 import qualified Text.Parsec            as Parsec
-import           Text.Parsec.Combinator (optionMaybe)
+import           Text.Parsec.Combinator (optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
                                          buildExpressionParser)
 import           Text.Parsec.Language   (emptyDef)
@@ -25,6 +25,7 @@ keywords =
   , "break"
   , "if"
   , "else"
+  , "for"
   ]
 
 operatorNames :: [String]
@@ -62,6 +63,7 @@ reservedOperatorNames = Token.reservedOp tokenParser
 
 parens = Token.parens tokenParser
 braces = Token.braces tokenParser
+semi = Token.semi tokenParser
 
 boolean :: Parser Expression
 boolean = true <|> false
@@ -99,6 +101,8 @@ data Expression
   | JSContinue
   | JSBreak
   | JSIf Expression Expression (Maybe Expression)
+  | JSFor (Expression, Expression, Expression) Expression
+  | JSEmpty
   deriving (Eq, Show)
 
 programParser :: Parser Expression
@@ -138,6 +142,7 @@ termParser = parens expressionParser
   <|> continueParser
   <|> breakParser
   <|> ifParser
+  <|> forParser
   <|> boolean
   <|> (JSNumber <$> integer)
 
@@ -171,3 +176,21 @@ ifParser = do
     reservedKeywords "else"
     expressionParser
   return $ JSIf expression block elseBlock
+
+forParser :: Parser Expression
+forParser = do
+  reservedKeywords "for"
+  expressions <- parens $ do
+    one <- forExpression <|> semi *> empty
+    two <- forExpression <|> semi *> empty
+    three <- expressionParser <|> empty
+    return (one, two, three)
+  block <- expressionParser
+  return $ JSFor expressions block
+  where
+    forExpression = do
+      expression <- expressionParser
+      semi
+      return expression
+    empty =
+      return JSEmpty
