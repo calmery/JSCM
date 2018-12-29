@@ -29,6 +29,9 @@ keywords =
   , "for"
   , "try"
   , "catch"
+  , "switch"
+  , "case"
+  , "default"
   ]
 
 operatorNames :: [String]
@@ -107,6 +110,9 @@ data Expression
   | JSFor (Expression, Expression, Expression) Expression
   | JSEmpty
   | JSTryCatch Expression Expression Expression (Maybe Expression)
+  | JSSwitch Expression Expression
+  | JSCase Expression Expression
+  | JSDefault Expression
   deriving (Eq, Show)
 
 programParser :: Parser Expression
@@ -143,17 +149,21 @@ termParser :: Parser Expression
 termParser = parens expressionParser
   <|> blockParser
   <|> whileParser
-  <|> continueParser
-  <|> breakParser
   <|> ifParser
   <|> forParser
   <|> tryCatchParser
-  <|> boolean
-  <|> (JSNumber <$> integer)
+  <|> switchParser
+  <|> do
+    v <- continueParser <|> breakParser <|> boolean <|> (JSNumber <$> integer)
+    optional semi
+    return v
 
 blockParser :: Parser Expression
-blockParser = do
-  expressions <- braces $ many expressionParser
+blockParser = braces expressionsParser
+
+expressionsParser :: Parser Expression
+expressionsParser = do
+  expressions <- many expressionParser
   return $ JSBlock expressions
 
 whileParser :: Parser Expression
@@ -186,17 +196,12 @@ forParser :: Parser Expression
 forParser = do
   reservedKeywords "for"
   expressions <- parens $ do
-    one <- forExpression <|> semi *> empty
-    two <- forExpression <|> semi *> empty
+    one <- expressionParser <|> semi *> empty
+    two <- expressionParser <|> semi *> empty
     three <- expressionParser <|> empty
     return (one, two, three)
-  block <- expressionParser
-  return $ JSFor expressions block
+  JSFor expressions <$> expressionParser
   where
-    forExpression = do
-      expression <- expressionParser
-      semi
-      return expression
     empty =
       return JSEmpty
 
@@ -216,3 +221,23 @@ tryCatchParser = do
     block <- braces $ many expressionParser
     return $ JSBlock block
   return $ JSTryCatch tryBlock arguments catchBlock finallyBlock
+
+switchParser :: Parser Expression
+switchParser = do
+  reservedKeywords "switch"
+  expression <- parens expressionParser
+  block <- braces switchBlockParser
+  return $ JSSwitch expression block
+  where
+    switchBlockParser = do
+      expressions <- many $ switchCaseParser <|> switchDefaultParser
+      return $ JSBlock expressions
+    switchCaseParser = do
+      reservedKeywords "case"
+      expression <- expressionParser
+      char ':'
+      JSCase expression <$> expressionsParser
+    switchDefaultParser = do
+      reservedKeywords "default"
+      char ':'
+      JSDefault <$> expressionsParser

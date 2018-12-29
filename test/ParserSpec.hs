@@ -97,6 +97,13 @@ tryCatchSpec =
     parse "try { 1 + 1 } catch () { 2 + 2 } finally { 3 + 3 }" `shouldBe`
       Right (JSProgram [JSTryCatch (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]) JSEmpty (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]) (Just (JSBlock [JSPlus (JSNumber 3) (JSNumber 3)]))])
 
+switchStatementSpec :: Spec
+switchStatementSpec =
+  it "Switch Statement" $ do
+    parse "switch(true) { case true: 1 + 1; case false: 2 + 2; }" `shouldBe`
+      Right (JSProgram [JSSwitch (JSBoolean True) (JSBlock [JSCase (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]),JSCase (JSBoolean False) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)])])])
+    parse "switch(true) { case true: 1 + 1; case false: 2 + 2; default: 3 + 3; }" `shouldBe`
+      Right (JSProgram [JSSwitch (JSBoolean True) (JSBlock [JSCase (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]),JSCase (JSBoolean False) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]),JSDefault (JSBlock [JSPlus (JSNumber 3) (JSNumber 3)])])])
 
 spec :: Spec
 spec =
@@ -107,3 +114,4 @@ spec =
     ifStatementSpec
     forStatementSpec
     tryCatchSpec
+    switchStatementSpec
