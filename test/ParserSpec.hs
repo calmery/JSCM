@@ -59,8 +59,19 @@ comparisonOperatorsSpec =
       parse "1<=1" `shouldBe`
         Right (JSBody [JSLessOrEqual (JSNumber 1) (JSNumber 1)])
 
+whileStatementSpec :: Spec
+whileStatementSpec =
+  it "While Statement" $ do
+    parse "while (true) { 1 + 1 }" `shouldBe`
+      Right (JSBody [JSWhile (JSBoolean True) (JSBody [JSPlus (JSNumber 1) (JSNumber 1)])])
+    parse "while (true) { continue }" `shouldBe`
+      Right (JSBody [JSWhile (JSBoolean True) (JSBody [JSContinue])])
+    parse "while (true) { break }" `shouldBe`
+      Right (JSBody [JSWhile (JSBoolean True) (JSBody [JSBreak])])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
     arithmeticOperatorsSpec
     comparisonOperatorsSpec
+    whileStatementSpec

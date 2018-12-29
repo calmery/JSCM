@@ -13,12 +13,15 @@ import           Text.Parsec.Token    (LanguageDef, TokenParser,
 import qualified Text.Parsec.Token    as Token
 
 parse :: String -> Either Parsec.ParseError Expression
-parse = Parsec.parse moduleParser "JavaScript"
+parse = Parsec.parse bodyParser "JavaScript"
 
 keywords :: [String]
 keywords =
   [ "true"
   , "false"
+  , "while"
+  , "continue"
+  , "break"
   ]
 
 operatorNames :: [String]
@@ -55,6 +58,7 @@ reservedOperatorNames :: String -> Parsec.ParsecT String () Identity ()
 reservedOperatorNames = Token.reservedOp tokenParser
 
 parens = Token.parens tokenParser
+braces = Token.braces tokenParser
 
 boolean :: Parser Expression
 boolean = true <|> false
@@ -87,10 +91,13 @@ data Expression
   | JSLess Expression Expression
   | JSLessOrEqual Expression Expression
   | JSBoolean Bool
+  | JSWhile Expression Expression
+  | JSContinue
+  | JSBreak
   deriving (Eq, Show)
 
-moduleParser :: Parser Expression
-moduleParser = do
+bodyParser :: Parser Expression
+bodyParser = do
   expressions <- many expressionParser
   return $ JSBody expressions
 
@@ -120,4 +127,26 @@ table =
   ]
 
 termParser :: Parser Expression
-termParser = parens expressionParser <|> boolean <|> (JSNumber <$> integer)
+termParser = parens expressionParser
+  <|> whileParser
+  <|> continueParser
+  <|> breakParser
+  <|> boolean
+  <|> (JSNumber <$> integer)
+
+whileParser :: Parser Expression
+whileParser = do
+  reservedKeywords "while"
+  expression <- parens expressionParser
+  body <- braces bodyParser
+  return $ JSWhile expression body
+
+continueParser :: Parser Expression
+continueParser = do
+  reservedKeywords "continue"
+  return JSContinue
+
+breakParser :: Parser Expression
+breakParser = do
+  reservedKeywords "break"
+  return JSBreak
