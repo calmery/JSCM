@@ -1,6 +1,7 @@
 module Parser (parse, Expression(..)) where
 
-import           RIO
+import           RIO                  hiding (many)
+import           Text.Parsec          (many)
 import qualified Text.Parsec          as Parsec
 import           Text.Parsec.Expr     (Assoc (AssocLeft), Operator (Infix),
                                        buildExpressionParser)
@@ -12,7 +13,7 @@ import           Text.Parsec.Token    (LanguageDef, TokenParser,
 import qualified Text.Parsec.Token    as Token
 
 parse :: String -> Either Parsec.ParseError Expression
-parse = Parsec.parse expressionParser "JavaScript"
+parse = Parsec.parse moduleParser "JavaScript"
 
 keywords :: [String]
 keywords =
@@ -67,7 +68,8 @@ integer :: Parser Integer
 integer = Token.integer tokenParser
 
 data Expression
-  = JSNumber Integer
+  = JSBody [Expression]
+  | JSNumber Integer
   | JSPlus Expression Expression
   | JSMinus Expression Expression
   | JSTimes Expression Expression
@@ -84,6 +86,11 @@ data Expression
   | JSLessOrEqual Expression Expression
   | JSBoolean Bool
   deriving (Eq, Show)
+
+moduleParser :: Parser Expression
+moduleParser = do
+  expressions <- many expressionParser
+  return $ JSBody expressions
 
 expressionParser :: Parser Expression
 expressionParser = buildExpressionParser table termParser
