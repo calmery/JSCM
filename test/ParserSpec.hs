@@ -139,6 +139,18 @@ variableSpec =
     parse "var x = 1" `shouldBe`
       Right (JSProgram [JSAssignment (JSVariableDeclaration (JSIdentifier "x")) (JSNumber 1)])
 
+functionStatementSpec :: Spec
+functionStatementSpec =
+  it "Function Statement" $ do
+    parse "function f() {}" `shouldBe`
+      Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [] (JSBlock [])])
+    parse "function f(x) {}" `shouldBe`
+      Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x"] (JSBlock [])])
+    parse "function f(x, y) {}" `shouldBe`
+      Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x", JSIdentifier "y"] (JSBlock [])])
+    parse "function f(x, y) { return x + y }" `shouldBe`
+      Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x",JSIdentifier "y"] (JSBlock [JSReturn (JSPlus (JSIdentifier "x") (JSIdentifier "y"))])])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -152,3 +164,4 @@ spec =
     tryCatchStatementSpec
     switchStatementSpec
     variableSpec
+    functionStatementSpec

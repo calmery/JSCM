@@ -23,6 +23,8 @@ keywords =
   , "case"
   , "default"
   , "var"
+  , "function"
+  , "return"
   ]
 
 operatorNames :: [String]

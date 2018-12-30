@@ -50,6 +50,8 @@ data Expression
   | JSCase Expression Expression
   | JSDefault Expression
   | JSString String
+  | JSFunctionDeclaration Expression [Expression] Expression
+  | JSReturn Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -63,6 +65,7 @@ reservedOp = Token.reservedOp tokenParser
 parens = Token.parens tokenParser
 braces = Token.braces tokenParser
 semi = Token.semi tokenParser
+comma = Token.comma tokenParser
 
 -- Parsers
 
@@ -111,6 +114,8 @@ parsers = parensParser
   <|> tryCatchParser
   <|> switchParser
   <|> variableParser
+  <|> functionParser
+  <|> returnParser
   <|> do
     value <- continueParser
       <|> breakParser
@@ -192,6 +197,23 @@ variableParser = do
   reserved "var"
   label <- identifier
   return $ JSVariableDeclaration label
+
+functionParser :: Parser Expression
+functionParser = do
+  reserved "function"
+  name <- identifier
+  arguments <- parens $ many $ do
+    label <- identifier
+    optional comma
+    return label
+  expressions <- expressionParser
+  return $ JSFunctionDeclaration name arguments expressions
+
+returnParser :: Parser Expression
+returnParser = do
+  reserved "return"
+  expression <- expressionParser
+  return $ JSReturn expression
 
 -- Values
 
