@@ -53,6 +53,9 @@ data Expression
   | JSFunctionDeclaration Expression [Expression] Expression
   | JSReturn Expression
   | JSArray [Expression]
+  | JSAndLogical Expression Expression
+  | JSOrLogical Expression Expression
+  | JSNot Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -103,6 +106,9 @@ expressionParser = buildExpressionParser table parsers
         , Infix (reservedOp "===" >> return JSStrictEqual) AssocLeft
         , Infix (reservedOp "!==" >> return JSStrictNotEqual) AssocLeft
         ]
+      , [ Infix (reservedOp "&&" >> return JSAndLogical) AssocLeft
+        , Infix (reservedOp "||" >> return JSOrLogical) AssocLeft
+        ]
       , [ Infix (reservedOp "=" >> return JSAssignment) AssocLeft
         ]
       ]
@@ -119,6 +125,7 @@ parsers = parensParser
   <|> functionParser
   <|> returnParser
   <|> arrayParser
+  <|> notParser
   <|> do
     value <- continueParser
       <|> breakParser
@@ -225,6 +232,12 @@ arrayParser = brackets $ do
     optional comma
     return expression
   return $ JSArray expressions
+
+notParser :: Parser Expression
+notParser = do
+  reservedOp "!"
+  expression <- expressionParser
+  return $ JSNot expression
 
 -- Values
 

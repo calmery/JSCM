@@ -163,6 +163,18 @@ arrayStatementSpec =
     parse "[1, 2, [3, 4, 5]]" `shouldBe`
       Right (JSProgram [JSArray [JSNumber 1, JSNumber 2, JSArray [JSNumber 3, JSNumber 4, JSNumber 5]]])
 
+logicalOperatorsSpec :: Spec
+logicalOperatorsSpec =
+  it "Logical Operators" $ do
+    parse "1 && 2" `shouldBe`
+      Right (JSProgram [JSAndLogical (JSNumber 1) (JSNumber 2)])
+    parse "1 || 2" `shouldBe`
+      Right (JSProgram [JSOrLogical (JSNumber 1) (JSNumber 2)])
+    parse "1 && 2 || 3" `shouldBe`
+      Right (JSProgram [JSOrLogical (JSAndLogical (JSNumber 1) (JSNumber 2)) (JSNumber 3)])
+    parse "!1" `shouldBe`
+      Right (JSProgram [JSNot (JSNumber 1)])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -178,3 +190,4 @@ spec =
     variableSpec
     functionStatementSpec
     arrayStatementSpec
+    logicalOperatorsSpec

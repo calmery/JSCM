@@ -44,6 +44,9 @@ operatorNames =
   , "<"
   , "<="
   , "="
+  , "&&"
+  , "||"
+  , "!"
   ]
 
 languageDef :: LanguageDef st
