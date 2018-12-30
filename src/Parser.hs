@@ -52,6 +52,7 @@ data Expression
   | JSString String
   | JSFunctionDeclaration Expression [Expression] Expression
   | JSReturn Expression
+  | JSArray [Expression]
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -64,6 +65,7 @@ reservedOp = Token.reservedOp tokenParser
 
 parens = Token.parens tokenParser
 braces = Token.braces tokenParser
+brackets = Token.brackets tokenParser
 semi = Token.semi tokenParser
 comma = Token.comma tokenParser
 
@@ -116,6 +118,7 @@ parsers = parensParser
   <|> variableParser
   <|> functionParser
   <|> returnParser
+  <|> arrayParser
   <|> do
     value <- continueParser
       <|> breakParser
@@ -214,6 +217,14 @@ returnParser = do
   reserved "return"
   expression <- expressionParser
   return $ JSReturn expression
+
+arrayParser :: Parser Expression
+arrayParser = brackets $ do
+  expressions <- many $ do
+    expression <- expressionParser
+    optional comma
+    return expression
+  return $ JSArray expressions
 
 -- Values
 

@@ -151,6 +151,18 @@ functionStatementSpec =
     parse "function f(x, y) { return x + y }" `shouldBe`
       Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x",JSIdentifier "y"] (JSBlock [JSReturn (JSPlus (JSIdentifier "x") (JSIdentifier "y"))])])
 
+arrayStatementSpec :: Spec
+arrayStatementSpec =
+  it "Array Statement" $ do
+    parse "[]" `shouldBe`
+      Right (JSProgram [JSArray []])
+    parse "[1]" `shouldBe`
+      Right (JSProgram [JSArray [JSNumber 1]])
+    parse "[1, 2, 3]" `shouldBe`
+      Right (JSProgram [JSArray [JSNumber 1, JSNumber 2, JSNumber 3]])
+    parse "[1, 2, [3, 4, 5]]" `shouldBe`
+      Right (JSProgram [JSArray [JSNumber 1, JSNumber 2, JSArray [JSNumber 3, JSNumber 4, JSNumber 5]]])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -165,3 +177,4 @@ spec =
     switchStatementSpec
     variableSpec
     functionStatementSpec
+    arrayStatementSpec
