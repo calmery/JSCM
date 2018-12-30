@@ -39,6 +39,9 @@ data Expression
   | JSWhile Expression Expression
   | JSContinue
   | JSBreak
+  | JSAssignment Expression Expression
+  | JSIdentifier String
+  | JSVariableDeclaration Expression
   | JSIf Expression Expression (Maybe Expression)
   | JSFor (Expression, Expression, Expression) Expression
   | JSEmpty
@@ -95,6 +98,8 @@ expressionParser = buildExpressionParser table parsers
         , Infix (reservedOp "===" >> return JSStrictEqual) AssocLeft
         , Infix (reservedOp "!==" >> return JSStrictNotEqual) AssocLeft
         ]
+      , [ Infix (reservedOp "=" >> return JSAssignment) AssocLeft
+        ]
       ]
 
 parsers :: Parser Expression
@@ -105,12 +110,14 @@ parsers = parensParser
   <|> forParser
   <|> tryCatchParser
   <|> switchParser
+  <|> variableParser
   <|> do
     value <- continueParser
       <|> breakParser
       <|> boolean
       <|> integer
       <|> string
+      <|> identifier
     optional semi
     return value
 
@@ -180,6 +187,12 @@ switchParser = do
       char ':'
       JSDefault <$> expressionsParser
 
+variableParser :: Parser Expression
+variableParser = do
+  reserved "var"
+  label <- identifier
+  return $ JSVariableDeclaration label
+
 -- Values
 
 continueParser :: Parser Expression
@@ -221,3 +234,8 @@ string = do
   char singleOrDouble
   skipMany $ space <|> tab <|> newline
   return $ JSString $ concat xxs
+
+identifier :: Parser Expression
+identifier = do
+  xs <- Token.identifier tokenParser
+  return $ JSIdentifier xs

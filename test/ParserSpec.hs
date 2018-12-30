@@ -131,6 +131,14 @@ switchStatementSpec =
     parse "switch(true) { case true: 1 + 1; case false: 2 + 2; default: 3 + 3; }" `shouldBe`
       Right (JSProgram [JSSwitch (JSBoolean True) (JSBlock [JSCase (JSBoolean True) (JSBlock [JSPlus (JSNumber 1) (JSNumber 1)]),JSCase (JSBoolean False) (JSBlock [JSPlus (JSNumber 2) (JSNumber 2)]),JSDefault (JSBlock [JSPlus (JSNumber 3) (JSNumber 3)])])])
 
+variableSpec :: Spec
+variableSpec =
+  it "Variable" $ do
+    parse "x = 1" `shouldBe`
+      Right (JSProgram [JSAssignment (JSIdentifier "x") (JSNumber 1)])
+    parse "var x = 1" `shouldBe`
+      Right (JSProgram [JSAssignment (JSVariableDeclaration (JSIdentifier "x")) (JSNumber 1)])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -143,3 +151,4 @@ spec =
     forStatementSpec
     tryCatchStatementSpec
     switchStatementSpec
+    variableSpec

@@ -22,6 +22,7 @@ keywords =
   , "switch"
   , "case"
   , "default"
+  , "var"
   ]
 
 operatorNames :: [String]
@@ -40,6 +41,7 @@ operatorNames =
   , ">="
   , "<"
   , "<="
+  , "="
   ]
 
 languageDef :: LanguageDef st
