@@ -63,6 +63,8 @@ data Expression
   | JSMember Expression Expression
   | JSPrefixPlus Expression
   | JSPrefixMinus Expression
+  | JSPrefixPlusUpdate Expression
+  | JSPrefixMinusUpdate Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -118,6 +120,8 @@ expressionParser = buildExpressionParser table parsers
           [ (JSPrefixNot <$ reservedOp "!")
           , (JSPrefixPlus <$ reservedOp "+")
           , (JSPrefixMinus <$ reservedOp "-")
+          , (JSPrefixPlusUpdate <$ reservedOp "++")
+          , (JSPrefixMinusUpdate <$ reservedOp "--")
           ]
         ]
       , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft

@@ -36,9 +36,17 @@ arithmeticOperatorsSpec =
     it "Addition" $ do
       parse "1+1" `shouldBe`
         Right (JSProgram [JSPlus (JSNumber 1) (JSNumber 1)])
+      parse "++1" `shouldBe`
+        Right (JSProgram [JSPrefixPlusUpdate (JSNumber 1)])
+      parse "++1\n++1" `shouldBe`
+        Right (JSProgram [JSPrefixPlusUpdate (JSNumber 1), JSPrefixPlusUpdate (JSNumber 1)])
     it "Subtraction" $ do
       parse "1-1" `shouldBe`
         Right (JSProgram [JSMinus (JSNumber 1) (JSNumber 1)])
+      parse "--1" `shouldBe`
+        Right (JSProgram [JSPrefixMinusUpdate (JSNumber 1)])
+      parse "--1\n--1" `shouldBe`
+        Right (JSProgram [JSPrefixMinusUpdate (JSNumber 1), JSPrefixMinusUpdate (JSNumber 1)])
     it "Multiplication" $ do
       parse "1*1" `shouldBe`
         Right (JSProgram [JSTimes (JSNumber 1) (JSNumber 1)])
