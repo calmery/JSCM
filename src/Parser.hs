@@ -92,7 +92,10 @@ programParser = do
 
 expressionsParser :: Parser Expression
 expressionsParser = do
-  expressions <- many expressionParser
+  expressions <- many $ do
+    expression <- expressionParser
+    optional semi
+    return expression
   return $ JSBlock expressions
 
 expressionParser :: Parser Expression
@@ -143,15 +146,12 @@ parsers = parensParser
   <|> returnParser
   <|> arrayParser
   <|> notParser
-  <|> do
-    value <- continueParser
-      <|> breakParser
-      <|> boolean
-      <|> integer
-      <|> string
-      <|> identifier
-    optional semi
-    return value
+  <|> continueParser
+  <|> breakParser
+  <|> boolean
+  <|> integer
+  <|> string
+  <|> identifier
 
 -- Statements
 
@@ -189,11 +189,16 @@ forParser :: Parser Expression
 forParser = do
   reserved "for"
   expressions <- parens $ do
-    one <- expressionParser <|> semi $> JSEmpty
-    two <- expressionParser <|> semi $> JSEmpty
+    one <- e <|> semi $> JSEmpty
+    two <- e <|> semi $> JSEmpty
     three <- expressionParser <|> return JSEmpty
     return (one, two, three)
   JSFor expressions <$> expressionParser
+  where
+    e = do
+      expression <- expressionParser
+      semi
+      return expression
 
 tryCatchParser :: Parser Expression
 tryCatchParser = do
