@@ -57,10 +57,12 @@ data Expression
   | JSArray [Expression]
   | JSAndLogical Expression Expression
   | JSOrLogical Expression Expression
-  | JSNot Expression
+  | JSPrefixNot Expression
   | JSCall [Expression] Expression
   | JSLabeled Expression Expression
   | JSMember Expression Expression
+  | JSPrefixPlus Expression
+  | JSPrefixMinus Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -88,7 +90,10 @@ dot = Token.dot tokenParser
 
 programParser :: Parser Expression
 programParser = do
-  expressions <- many expressionParser
+  expressions <- many $ do
+    expression <- expressionParser
+    optional semi
+    return expression
   return $ JSProgram expressions
 
 expressionsParser :: Parser Expression
@@ -110,7 +115,9 @@ expressionParser = buildExpressionParser table parsers
           ]
         ]
       , [ (prefix . choice)
-          [ (JSNot <$ reservedOp "!")
+          [ (JSPrefixNot <$ reservedOp "!")
+          , (JSPrefixPlus <$ reservedOp "+")
+          , (JSPrefixMinus <$ reservedOp "-")
           ]
         ]
       , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft

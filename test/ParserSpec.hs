@@ -182,8 +182,6 @@ logicalOperatorsSpec =
       Right (JSProgram [JSOrLogical (JSNumber 1) (JSNumber 2)])
     parse "1 && 2 || 3" `shouldBe`
       Right (JSProgram [JSOrLogical (JSAndLogical (JSNumber 1) (JSNumber 2)) (JSNumber 3)])
-    parse "!1" `shouldBe`
-      Right (JSProgram [JSNot (JSNumber 1)])
 
 associativeArraySpec :: Spec
 associativeArraySpec =
@@ -198,6 +196,28 @@ associativeArraySpec =
       Right (JSProgram [JSMember (JSIdentifier "y") (JSIdentifier "x")])
     parse "x.y.z" `shouldBe`
       Right (JSProgram [JSMember (JSMember (JSIdentifier "z") (JSIdentifier "y")) (JSIdentifier "x")])
+
+unaryOperatorsSpec :: Spec
+unaryOperatorsSpec =
+  it "Unary Operators" $ do
+    parse "!1" `shouldBe`
+      Right (JSProgram [JSPrefixNot (JSNumber 1)])
+    parse "+1" `shouldBe`
+      Right (JSProgram [JSPrefixPlus (JSNumber 1)])
+    parse "+1\n+1" `shouldBe`
+      Right (JSProgram [JSPlus (JSPrefixPlus (JSNumber 1)) (JSNumber 1)])
+    parse "+1;\n+1" `shouldBe`
+      Right (JSProgram [JSPrefixPlus (JSNumber 1), JSPrefixPlus (JSNumber 1)])
+    parse "-1" `shouldBe`
+      Right (JSProgram [JSPrefixMinus (JSNumber 1)])
+    parse "-1\n-1" `shouldBe`
+      Right (JSProgram [JSMinus (JSPrefixMinus (JSNumber 1)) (JSNumber 1)])
+    parse "-1;\n-1" `shouldBe`
+      Right (JSProgram [JSPrefixMinus (JSNumber 1), JSPrefixMinus (JSNumber 1)])
+    parse "!1\n+1" `shouldBe`
+      Right (JSProgram [JSPlus (JSPrefixNot (JSNumber 1)) (JSNumber 1)])
+    parse "!1;\n+1" `shouldBe`
+      Right (JSProgram [JSPrefixNot (JSNumber 1), JSPrefixPlus (JSNumber 1)])
 
 spec :: Spec
 spec =
@@ -216,3 +236,4 @@ spec =
     arrayStatementSpec
     logicalOperatorsSpec
     associativeArraySpec
+    unaryOperatorsSpec
