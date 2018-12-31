@@ -1,6 +1,6 @@
 module Parser (parse, Expression(..)) where
 
-import           RIO                    hiding (many, optional)
+import           RIO                    hiding (many, optional, try)
 import           Text.Parsec            (many, skipMany)
 import qualified Text.Parsec            as Parsec
 import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space,
@@ -9,6 +9,7 @@ import           Text.Parsec.Combinator (chainl1, choice, optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft),
                                          Operator (Infix, Postfix),
                                          buildExpressionParser)
+import           Text.Parsec.Prim       (try)
 import           Text.Parsec.String     (Parser)
 import qualified Text.Parsec.Token      as Token
 import           TokenParser            (tokenParser)
@@ -59,6 +60,8 @@ data Expression
   | JSNot Expression
   | JSIndex Expression Expression
   | JSCall [Expression] Expression
+  | JSLabeled Expression Expression
+  | JSMember Expression Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -78,6 +81,8 @@ braces = Token.braces tokenParser
 brackets = Token.brackets tokenParser
 semi = Token.semi tokenParser
 comma = Token.comma tokenParser
+colon = Token.colon tokenParser
+dot = Token.dot tokenParser
 
 -- Parsers
 
@@ -96,7 +101,8 @@ expressionParser = buildExpressionParser table parsers
   where
     table =
       [ [ (postfix . choice)
-          [ JSIndex <$> brackets expressionParser
+          [ JSMember <$> (dot *> expressionParser)
+          , JSIndex <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
           ]
         ]
@@ -154,7 +160,15 @@ parensParser :: Parser Expression
 parensParser = parens expressionParser -- 括弧付き
 
 blockParser :: Parser Expression
-blockParser = braces expressionsParser -- 複数行のソースコードをパースする
+blockParser = try (braces hashParser) <|> braces expressionsParser
+  where
+    hashParser = do
+      labels <- commaSep $ do
+        label <- identifier
+        colon
+        expression <- expressionParser
+        return $ JSLabeled label expression
+      return $ JSBlock labels
 
 whileParser :: Parser Expression
 whileParser = do

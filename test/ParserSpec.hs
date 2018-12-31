@@ -185,6 +185,20 @@ logicalOperatorsSpec =
     parse "!1" `shouldBe`
       Right (JSProgram [JSNot (JSNumber 1)])
 
+associativeArraySpec :: Spec
+associativeArraySpec =
+  it "Associative Array" $ do
+    parse "{ x: 1 }" `shouldBe`
+      Right (JSProgram [JSBlock [JSLabeled (JSIdentifier "x") (JSNumber 1)]])
+    parse "{ x: 1, y: 2 }" `shouldBe`
+      Right (JSProgram [JSBlock [JSLabeled (JSIdentifier "x") (JSNumber 1), JSLabeled (JSIdentifier "y") (JSNumber 2)]])
+    parse "{ x: 1, y: { z: 2 } }" `shouldBe`
+      Right (JSProgram [JSBlock [JSLabeled (JSIdentifier "x") (JSNumber 1), JSLabeled (JSIdentifier "y") (JSBlock [JSLabeled (JSIdentifier "z") (JSNumber 2)])]])
+    parse "x.y" `shouldBe`
+      Right (JSProgram [JSMember (JSIdentifier "y") (JSIdentifier "x")])
+    parse "x.y.z" `shouldBe`
+      Right (JSProgram [JSMember (JSMember (JSIdentifier "z") (JSIdentifier "y")) (JSIdentifier "x")])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -201,3 +215,4 @@ spec =
     functionStatementSpec
     arrayStatementSpec
     logicalOperatorsSpec
+    associativeArraySpec
