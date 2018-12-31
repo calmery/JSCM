@@ -14,7 +14,9 @@ main = do
     let fileName = head args
     handle <- openFile fileName ReadMode
     contents <- hGetContents handle
-    putStrLn . show $ parse contents
+    putStrLn $ case parse fileName contents of
+      Left e       -> show e
+      Right result -> show result
     hClose handle
   else
     putStrLn "Argument not specified"

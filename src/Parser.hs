@@ -14,8 +14,8 @@ import           Text.Parsec.String     (Parser)
 import qualified Text.Parsec.Token      as Token
 import           TokenParser            (tokenParser)
 
-parse :: String -> Either Parsec.ParseError Expression
-parse = Parsec.parse programParser "JavaScript"
+parse :: String -> String -> Either Parsec.ParseError Expression
+parse = Parsec.parse programParser
 
 -- Data
 

@@ -1,8 +1,13 @@
 module ParserSpec (spec) where
 
-import           Parser     (Expression (..), parse)
+import           Parser      (Expression (..))
+import qualified Parser      as P
 import           RIO
 import           Test.Hspec
+import qualified Text.Parsec as Parsec
+
+parse :: String -> Either Parsec.ParseError Expression
+parse = P.parse "Test"
 
 commentSpec :: Spec
 commentSpec =
