@@ -58,6 +58,7 @@ data Expression
   | JSOrLogical Expression Expression
   | JSNot Expression
   | JSIndex Expression Expression
+  | JSCall [Expression] Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -71,6 +72,7 @@ reserved = Token.reserved tokenParser
 reservedOp :: String -> Parsec.ParsecT String () Identity ()
 reservedOp = Token.reservedOp tokenParser
 
+commaSep = Token.commaSep tokenParser
 parens = Token.parens tokenParser
 braces = Token.braces tokenParser
 brackets = Token.brackets tokenParser
@@ -95,6 +97,7 @@ expressionParser = buildExpressionParser table parsers
     table =
       [ [ (postfix . choice)
           [ JSIndex <$> brackets expressionParser
+          , JSCall <$> (parens . commaSep) expressionParser
           ]
         ]
       , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft

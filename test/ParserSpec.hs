@@ -150,6 +150,12 @@ functionStatementSpec =
       Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x", JSIdentifier "y"] (JSBlock [])])
     parse "function f(x, y) { return x + y }" `shouldBe`
       Right (JSProgram [JSFunctionDeclaration (JSIdentifier "f") [JSIdentifier "x",JSIdentifier "y"] (JSBlock [JSReturn (JSPlus (JSIdentifier "x") (JSIdentifier "y"))])])
+    parse "f()" `shouldBe`
+      Right (JSProgram [JSCall [] (JSIdentifier "f")])
+    parse "f(1, 2)" `shouldBe`
+      Right (JSProgram [JSCall [JSNumber 1,JSNumber 2] (JSIdentifier "f")])
+    parse "f(1, 2)(3, 4)" `shouldBe`
+      Right (JSProgram [JSCall [JSNumber 3,JSNumber 4] (JSCall [JSNumber 1,JSNumber 2] (JSIdentifier "f"))])
 
 arrayStatementSpec :: Spec
 arrayStatementSpec =
