@@ -7,7 +7,7 @@ import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space,
                                          tab)
 import           Text.Parsec.Combinator (chainl1, choice, optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft),
-                                         Operator (Infix, Postfix),
+                                         Operator (Infix, Postfix, Prefix),
                                          buildExpressionParser)
 import           Text.Parsec.Prim       (try)
 import           Text.Parsec.String     (Parser)
@@ -67,6 +67,7 @@ data Expression
 
 -- https://stackoverflow.com/questions/10475337/parsec-expr-repeated-prefix-postfix-operator-not-supported?lq=1
 postfix p = Postfix . chainl1 p $ return (flip (.))
+prefix p = Prefix . chainl1 p $ return (.)
 
 reserved :: String -> Parser ()
 reserved = Token.reserved tokenParser
@@ -108,6 +109,10 @@ expressionParser = buildExpressionParser table parsers
           , JSCall <$> (parens . commaSep) expressionParser
           ]
         ]
+      , [ (prefix . choice)
+          [ (JSNot <$ reservedOp "!")
+          ]
+        ]
       , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
         , Infix (reservedOp "*" >> return JSTimes) AssocLeft
         , Infix (reservedOp "/" >> return JSDivide) AssocLeft
@@ -145,7 +150,6 @@ parsers = parensParser
   <|> functionParser
   <|> returnParser
   <|> arrayParser
-  <|> notParser
   <|> continueParser
   <|> breakParser
   <|> boolean
@@ -262,12 +266,6 @@ arrayParser = brackets $ do
     optional comma
     return expression
   return $ JSArray expressions
-
-notParser :: Parser Expression
-notParser = do
-  reservedOp "!"
-  expression <- expressionParser
-  return $ JSNot expression
 
 -- Values
 
