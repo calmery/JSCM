@@ -5,8 +5,9 @@ import           Text.Parsec            (many, skipMany)
 import qualified Text.Parsec            as Parsec
 import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space,
                                          tab)
-import           Text.Parsec.Combinator (optionMaybe, optional)
-import           Text.Parsec.Expr       (Assoc (AssocLeft), Operator (Infix),
+import           Text.Parsec.Combinator (chainl1, choice, optionMaybe, optional)
+import           Text.Parsec.Expr       (Assoc (AssocLeft),
+                                         Operator (Infix, Postfix),
                                          buildExpressionParser)
 import           Text.Parsec.String     (Parser)
 import qualified Text.Parsec.Token      as Token
@@ -56,9 +57,13 @@ data Expression
   | JSAndLogical Expression Expression
   | JSOrLogical Expression Expression
   | JSNot Expression
+  | JSIndex Expression Expression
   deriving (Eq, Show)
 
 -- Token Parsers
+
+-- https://stackoverflow.com/questions/10475337/parsec-expr-repeated-prefix-postfix-operator-not-supported?lq=1
+postfix p = Postfix . chainl1 p $ return (flip (.))
 
 reserved :: String -> Parser ()
 reserved = Token.reserved tokenParser
@@ -88,7 +93,11 @@ expressionParser :: Parser Expression
 expressionParser = buildExpressionParser table parsers
   where
     table =
-      [ [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
+      [ [ (postfix . choice)
+          [ JSIndex <$> brackets expressionParser
+          ]
+        ]
+      , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
         , Infix (reservedOp "*" >> return JSTimes) AssocLeft
         , Infix (reservedOp "/" >> return JSDivide) AssocLeft
         , Infix (reservedOp "%" >> return JSModulo) AssocLeft

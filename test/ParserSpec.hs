@@ -162,6 +162,10 @@ arrayStatementSpec =
       Right (JSProgram [JSArray [JSNumber 1, JSNumber 2, JSNumber 3]])
     parse "[1, 2, [3, 4, 5]]" `shouldBe`
       Right (JSProgram [JSArray [JSNumber 1, JSNumber 2, JSArray [JSNumber 3, JSNumber 4, JSNumber 5]]])
+    parse "[1, 2, 3][0]" `shouldBe`
+      Right (JSProgram [JSIndex (JSNumber 0) (JSArray [JSNumber 1,JSNumber 2,JSNumber 3])])
+    parse "[1, 2, [3, 4, 5]][2][0]" `shouldBe`
+      Right (JSProgram [JSIndex (JSNumber 0) (JSIndex (JSNumber 2) (JSArray [JSNumber 1,JSNumber 2,JSArray [JSNumber 3,JSNumber 4,JSNumber 5]]))])
 
 logicalOperatorsSpec :: Spec
 logicalOperatorsSpec =
