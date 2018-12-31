@@ -58,7 +58,6 @@ data Expression
   | JSAndLogical Expression Expression
   | JSOrLogical Expression Expression
   | JSNot Expression
-  | JSIndex Expression Expression
   | JSCall [Expression] Expression
   | JSLabeled Expression Expression
   | JSMember Expression Expression
@@ -102,7 +101,7 @@ expressionParser = buildExpressionParser table parsers
     table =
       [ [ (postfix . choice)
           [ JSMember <$> (dot *> expressionParser)
-          , JSIndex <$> brackets expressionParser
+          , JSMember <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
           ]
         ]
