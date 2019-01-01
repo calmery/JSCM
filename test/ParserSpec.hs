@@ -232,6 +232,14 @@ unaryOperatorsSpec =
     parse "!1;\n+1" `shouldBe`
       Right (JSProgram [JSPrefixNot (JSNumber 1), JSPrefixPlus (JSNumber 1)])
 
+bigIntegerSpec :: Spec
+bigIntegerSpec =
+  it "BigInt" $ do
+    parse "1n" `shouldBe`
+      Right (JSProgram [JSBigInt 1])
+    parse "1n\n1n" `shouldBe`
+      Right (JSProgram [JSBigInt 1, JSBigInt 1])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
@@ -250,3 +258,4 @@ spec =
     logicalOperatorsSpec
     associativeArraySpec
     unaryOperatorsSpec
+    bigIntegerSpec

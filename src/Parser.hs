@@ -65,6 +65,7 @@ data Expression
   | JSPrefixMinus Expression
   | JSPrefixPlusUpdate Expression
   | JSPrefixMinusUpdate Expression
+  | JSBigInt Integer
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -78,6 +79,9 @@ reserved = Token.reserved tokenParser
 
 reservedOp :: String -> Parsec.ParsecT String () Identity ()
 reservedOp = Token.reservedOp tokenParser
+
+symbol :: String -> Parsec.ParsecT String () Identity String
+symbol = Token.symbol tokenParser
 
 commaSep = Token.commaSep tokenParser
 parens = Token.parens tokenParser
@@ -164,6 +168,7 @@ parsers = parensParser
   <|> continueParser
   <|> breakParser
   <|> boolean
+  <|> try bigint
   <|> integer
   <|> string
   <|> identifier
@@ -304,6 +309,12 @@ integer :: Parser Expression
 integer = do
   xs <- Token.integer tokenParser
   return $ JSNumber xs
+
+bigint :: Parser Expression
+bigint = do
+  xs <- Token.integer tokenParser
+  symbol "n"
+  return $ JSBigInt xs
 
 string :: Parser Expression
 string = do
