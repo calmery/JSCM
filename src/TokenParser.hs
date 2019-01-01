@@ -49,6 +49,7 @@ operatorNames =
   , "!"
   , "++"
   , "--"
+  , "&"
   ]
 
 languageDef :: LanguageDef st

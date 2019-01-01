@@ -240,6 +240,12 @@ bigIntegerSpec =
     parse "1n\n1n" `shouldBe`
       Right (JSProgram [JSBigInt 1, JSBigInt 1])
 
+bitwiseOperatorsSpec :: Spec
+bitwiseOperatorsSpec =
+  it "Bitwise Operators" $ do
+    parse "1 & 1" `shouldBe`
+      Right (JSProgram [JSAnd (JSNumber 1) (JSNumber 1)])
+
 spec :: Spec
 spec =
   describe "JavaScript" $ do
