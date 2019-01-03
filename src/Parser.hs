@@ -71,6 +71,8 @@ data Expression
   | JSLeftShift Expression Expression
   | JSRightShift Expression Expression
   | JSComment String
+  | JSPostfixPlusUpdate Expression
+  | JSPostfixMinusUpdate Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -130,6 +132,8 @@ expressionParser = buildExpressionParser table parsers
           [ JSMember <$> (dot *> expressionParser)
           , JSMember <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
+          , (JSPostfixPlusUpdate <$ reservedOp "++")
+          , (JSPostfixMinusUpdate <$ reservedOp "--")
           ]
         ]
       , [ (prefix . choice)
