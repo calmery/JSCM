@@ -245,6 +245,8 @@ bitwiseOperatorsSpec =
   it "Bitwise Operators" $ do
     parse "1 & 1" `shouldBe`
       Right (JSProgram [JSAnd (JSNumber 1) (JSNumber 1)])
+    parse "1 | 1" `shouldBe`
+      Right (JSProgram [JSOr (JSNumber 1) (JSNumber 1)])
 
 spec :: Spec
 spec =

@@ -67,6 +67,7 @@ data Expression
   | JSPrefixMinusUpdate Expression
   | JSBigInt Integer
   | JSAnd Expression Expression
+  | JSOr Expression Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -148,6 +149,7 @@ expressionParser = buildExpressionParser table parsers
         , Infix (reservedOp "!==" >> return JSStrictNotEqual) AssocLeft
         ]
       , [ Infix (reservedOp "&" >> return JSAnd) AssocLeft
+        , Infix (reservedOp "|" >> return JSAnd) AssocLeft
         ]
       , [ Infix (reservedOp "&&" >> return JSAndLogical) AssocLeft
         , Infix (reservedOp "||" >> return JSOrLogical) AssocLeft

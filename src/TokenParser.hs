@@ -50,6 +50,7 @@ operatorNames =
   , "++"
   , "--"
   , "&"
+  , "|"
   ]
 
 languageDef :: LanguageDef st
