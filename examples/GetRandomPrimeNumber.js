@@ -188,3 +188,869 @@ function getRandomBigInt(min, max) {
 function getRandomNumber(min, max) {
   return Math.floor(Math.random() * (max + 1 - min)) + min;
 }
+
+/* --- Result --- */
+/*
+JSProgram
+  [JSCall
+    [JSCall
+      [JSNumber 1024]
+      (JSIdentifier "getRandomPrimeNumber")
+    ]
+    (JSMember
+      (JSIdentifier "log")
+      (JSIdentifier "console")
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "getRandomPrimeNumber")
+    [JSIdentifier "length"]
+    (JSBlock
+      [JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "primeCandidate")
+        )
+        (JSCall
+          [JSIdentifier "length"]
+          (JSIdentifier "getRandomPrimeNumberCandidate")
+        )
+      ,JSIf
+        (JSCall
+          [JSIdentifier "primeCandidate"
+          ,JSNumber 256
+          ]
+          (JSIdentifier "isPrime")
+        )
+        (JSBlock
+          [JSReturn
+            (JSIdentifier "primeCandidate")
+          ]
+        )
+        Nothing
+      ,JSReturn
+        (JSCall
+          [JSIdentifier "length"]
+          (JSIdentifier "getRandomPrimeNumber")
+        )
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "getRandomPrimeNumberCandidate")
+    [JSIdentifier "length"]
+    (JSBlock
+      [JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "primeCandidate")
+        )
+        (JSCall
+          [JSCall
+            [JSNumber 1024]
+            (JSIdentifier "getRandomBits")
+          ]
+          (JSIdentifier "BigInt")
+        )
+      ,JSReturn
+        (JSAnd
+          (JSAnd
+            (JSIdentifier "primeCandidate")
+            (JSLeftShift
+              (JSCall
+                [JSNumber 1]
+                (JSIdentifier "BigInt")
+              )
+              (JSMinus
+                (JSCall
+                  [JSIdentifier "length"]
+                  (JSIdentifier "BigInt")
+                )
+                (JSCall
+                  [JSNumber 1]
+                  (JSIdentifier "BigInt")
+                )
+              )
+            )
+          )
+          (JSCall
+            [JSNumber 1]
+            (JSIdentifier "BigInt")
+          )
+        )
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "getRandomBits")
+    [JSIdentifier "length"]
+    (JSBlock
+      [JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "bits")
+        )
+        (JSArray [])
+      ,JSFor
+        (JSAssignment
+          (JSVariableDeclaration
+            (JSIdentifier "i")
+          )
+          (JSNumber 0)
+        ,JSLess
+          (JSIdentifier "i")
+          (JSIdentifier "length")
+        ,JSPostfixPlusUpdate
+          (JSIdentifier "i")
+        )
+        (JSBlock
+          [JSCall
+            [JSCall
+              [JSNumber 0
+              ,JSNumber 1
+              ]
+              (JSIdentifier "getRandomNumber")
+            ]
+            (JSMember
+              (JSIdentifier "push")
+              (JSIdentifier "bits")
+            )
+          ]
+        )
+      ,JSReturn
+        (JSPlus
+          (JSString "0b")
+          (JSCall
+            [JSString ""]
+            (JSMember
+              (JSIdentifier "join")
+              (JSIdentifier "bits")
+            )
+          )
+        )
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "isPrime")
+    [JSIdentifier "primeCandidate"
+    ,JSIdentifier "numberOfTrials"
+    ]
+    (JSBlock
+      [JSIf
+        (JSOrLogical
+          (JSStrictEqual
+            (JSIdentifier "primeCandidate")
+            (JSCall
+              [JSNumber 2]
+              (JSIdentifier "BigInt")
+            )
+          )
+          (JSStrictEqual
+            (JSIdentifier "primeCandidate")
+            (JSCall
+              [JSNumber 3]
+              (JSIdentifier "BigInt")
+            )
+          )
+        )
+        (JSBlock
+          [JSReturn
+            (JSBoolean True)
+          ]
+        )
+        Nothing
+      ,JSIf
+        (JSOrLogical
+          (JSLessOrEqual
+            (JSIdentifier "primeCandidate")
+            (JSCall
+              [JSNumber 1]
+              (JSIdentifier "BigInt")
+            )
+          )
+          (JSStrictEqual
+            (JSModulo
+              (JSIdentifier "primeCandidate")
+              (JSCall
+                [JSNumber 2]
+                (JSIdentifier "BigInt")
+              )
+            )
+            (JSCall
+              [JSNumber 0]
+              (JSIdentifier "BigInt")
+            )
+          )
+        )
+        (JSBlock
+          [JSReturn
+            (JSBoolean False)
+          ]
+        )
+        Nothing
+      ,JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "s")
+        )
+        (JSCall
+          [JSNumber 0]
+          (JSIdentifier "BigInt")
+        )
+      ,JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "r")
+        )
+        (JSMinus
+          (JSIdentifier "primeCandidate")
+          (JSCall
+            [JSNumber 1]
+            (JSIdentifier "BigInt")
+          )
+        )
+      ,JSFor
+        (JSEmpty
+        ,JSStrictEqual
+          (JSAnd
+            (JSIdentifier "r")
+            (JSCall
+              [JSNumber 1]
+              (JSIdentifier "BigInt")
+            )
+          )
+          (JSCall
+            [JSNumber 0]
+            (JSIdentifier "BigInt")
+          )
+        ,JSEmpty
+        )
+        (JSBlock
+          [JSAssignment
+            (JSIdentifier "s")
+            (JSPlus
+              (JSIdentifier "s")
+              (JSCall
+                [JSNumber 1]
+                (JSIdentifier "BigInt")
+              )
+            )
+          ,JSAssignment
+            (JSIdentifier "r")
+            (JSDivide
+              (JSIdentifier "r")
+              (JSCall
+                [JSNumber 2]
+                (JSIdentifier "BigInt")
+              )
+            )
+          ]
+        )
+      ,JSFor
+        (JSAssignment
+          (JSVariableDeclaration
+            (JSIdentifier "i")
+          )
+          (JSNumber 0)
+        ,JSLess
+          (JSIdentifier "i")
+          (JSIdentifier "numberOfTrials")
+        ,JSPostfixPlusUpdate
+          (JSIdentifier "i")
+        )
+        (JSBlock
+          [JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "randomBigInt")
+            )
+            (JSCall
+              [JSCall
+                [JSNumber 2]
+                (JSIdentifier "BigInt")
+              ,JSMinus
+                (JSIdentifier "primeCandidate")
+                (JSCall
+                  [JSNumber 1]
+                  (JSIdentifier "BigInt")
+                )
+              ]
+              (JSIdentifier "getRandomBigInt")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "x")
+            )
+            (JSCall
+              [JSIdentifier "randomBigInt"
+              ,JSIdentifier "r"
+              ,JSIdentifier "primeCandidate"
+              ]
+              (JSIdentifier "modularExponentiation")
+            )
+          ,JSIf
+            (JSAndLogical
+              (JSStrictNotEqual
+                (JSIdentifier "x")
+                (JSCall
+                  [JSNumber 1]
+                  (JSIdentifier "BigInt")
+                )
+              )
+              (JSStrictNotEqual
+                (JSIdentifier "x")
+                (JSMinus
+                  (JSIdentifier "primeCandidate")
+                  (JSCall
+                    [JSNumber 1]
+                    (JSIdentifier "BigInt")
+                  )
+                )
+              )
+            )
+            (JSBlock
+              [JSFor
+                (JSAssignment
+                  (JSVariableDeclaration
+                    (JSIdentifier "j")
+                  )
+                  (JSNumber 1)
+                ,JSAndLogical
+                  (JSLess
+                    (JSCall
+                      [JSIdentifier "j"]
+                      (JSIdentifier "BigInt")
+                    )
+                    (JSIdentifier "s")
+                  )
+                  (JSStrictNotEqual
+                    (JSIdentifier "x")
+                    (JSMinus
+                      (JSIdentifier "primeCandidate")
+                      (JSCall
+                        [JSNumber 1]
+                        (JSIdentifier "BigInt")
+                      )
+                    )
+                  )
+                ,JSPostfixPlusUpdate
+                  (JSIdentifier "j")
+                )
+                (JSBlock
+                  [JSAssignment
+                    (JSIdentifier "x")
+                    (JSCall
+                      [JSIdentifier "x"
+                      ,JSCall
+                        [JSNumber 2]
+                        (JSIdentifier "BigInt")
+                      ,JSIdentifier "primeCandidate"
+                      ]
+                      (JSIdentifier "modularExponentiation")
+                    )
+                  ,JSIf
+                    (JSStrictEqual
+                      (JSIdentifier "x")
+                      (JSCall
+                        [JSNumber 1]
+                        (JSIdentifier "BigInt")
+                      )
+                    )
+                    (JSBlock
+                      [JSReturn
+                        (JSBoolean False)
+                      ]
+                    )
+                    Nothing
+                  ]
+                )
+              ,JSIf
+                (JSStrictNotEqual
+                  (JSIdentifier "x")
+                  (JSMinus
+                    (JSIdentifier "primeCandidate")
+                    (JSCall
+                      [JSNumber 1]
+                      (JSIdentifier "BigInt")
+                    )
+                  )
+                )
+                (JSBlock
+                  [JSReturn
+                    (JSBoolean False)
+                  ]
+                )
+                Nothing
+              ]
+            )
+            Nothing
+          ]
+        )
+      ,JSReturn
+        (JSBoolean True)
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "modularExponentiation")
+    [JSIdentifier "base"
+    ,JSIdentifier "exponent"
+    ,JSIdentifier "modulo"
+    ]
+    (JSBlock
+      [JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "result")
+        )
+        (JSCall
+          [JSNumber 1]
+          (JSIdentifier "BigInt")
+        )
+      ,JSFor
+        (JSEmpty
+        ,JSGreater
+          (JSIdentifier "exponent")
+          (JSCall
+            [JSNumber 0]
+            (JSIdentifier "BigInt")
+          )
+        ,JSEmpty
+        )
+        (JSBlock
+          [JSIf
+            (JSStrictEqual
+              (JSAnd
+                (JSIdentifier "exponent")
+                (JSCall
+                  [JSNumber 1]
+                  (JSIdentifier "BigInt")
+                )
+              )
+              (JSCall
+                [JSNumber 1]
+                (JSIdentifier "BigInt")
+              )
+            )
+            (JSBlock
+              [JSAssignment
+                (JSIdentifier "result")
+                (JSModulo
+                  (JSTimes
+                    (JSIdentifier "result")
+                    (JSIdentifier "base")
+                  )
+                  (JSIdentifier "modulo")
+                )
+              ]
+            )
+            Nothing
+          ,JSAssignment
+            (JSIdentifier "exponent")
+            (JSRightShift
+              (JSIdentifier "exponent")
+              (JSCall
+                [JSNumber 1]
+                (JSIdentifier "BigInt")
+              )
+            )
+          ,JSAssignment
+            (JSIdentifier "base")
+            (JSModulo
+              (JSTimes
+                (JSIdentifier "base")
+                (JSIdentifier "base")
+              )
+              (JSIdentifier "modulo")
+            )
+          ]
+        )
+      ,JSReturn
+        (JSIdentifier "result")
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "getRandomBigInt")
+    [JSIdentifier "min"
+    ,JSIdentifier "max"
+    ]
+    (JSBlock
+      [JSIf
+        (JSStrictEqual
+          (JSIdentifier "min")
+          (JSIdentifier "max")
+        )
+        (JSBlock
+          [JSReturn
+            (JSIdentifier "min")
+          ]
+        )
+        Nothing
+      ,JSIf
+        (JSGreater
+          (JSIdentifier "min")
+          (JSIdentifier "max")
+        )
+        (JSBlock
+          [JSAssignment
+            (JSIdentifier "min")
+            (JSMember
+              (JSNumber 0)
+              (JSArray
+                [JSIdentifier "max"
+                ,JSAssignment
+                  (JSIdentifier "max")
+                  (JSIdentifier "min")
+                ]
+              )
+            )
+          ]
+        )
+        Nothing
+      ,JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "currentDigits")
+        )
+        (JSArray [])
+      ,JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "minString")
+        )
+        (JSCall
+          []
+          (JSMember
+            (JSIdentifier "toString")
+            (JSIdentifier "min")
+          )
+        )
+      ,JSAssignment
+        (JSVariableDeclaration
+          (JSIdentifier "maxString")
+        )
+        (JSCall
+          []
+          (JSMember
+            (JSIdentifier "toString")
+            (JSIdentifier "max")
+          )
+        )
+      ,JSIf
+        (JSLess
+          (JSMember
+            (JSIdentifier "length")
+            (JSIdentifier "minString")
+          )
+          (JSMember
+            (JSIdentifier "length")
+            (JSIdentifier "maxString")
+          )
+        )
+        (JSBlock
+          [JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "zeros")
+            )
+            (JSArray [])
+          ,JSFor
+            (JSAssignment
+              (JSVariableDeclaration
+                (JSIdentifier "i")
+              )
+              (JSNumber 0)
+            ,JSLess
+              (JSIdentifier "i")
+              (JSMinus
+                (JSMember
+                  (JSIdentifier "length")
+                  (JSIdentifier "maxString")
+                )
+                (JSMember
+                  (JSIdentifier "length")
+                  (JSIdentifier "minString")
+                )
+              )
+            ,JSPostfixPlusUpdate
+              (JSIdentifier "i")
+            )
+            (JSBlock
+              [JSCall
+                [JSNumber 0]
+                (JSMember
+                  (JSIdentifier "push")
+                  (JSIdentifier "zeros")
+                )
+              ]
+            )
+          ,JSAssignment
+            (JSIdentifier "minString")
+            (JSPlus
+              (JSCall
+                [JSString ""]
+                (JSMember
+                  (JSIdentifier "join")
+                  (JSIdentifier "zeros")
+                )
+              )
+              (JSIdentifier "minString")
+            )
+          ]
+        )
+        Nothing
+      ,JSFor
+        (JSAssignment
+          (JSVariableDeclaration
+            (JSIdentifier "i")
+          )
+          (JSNumber 0)
+        ,JSLess
+          (JSIdentifier "i")
+          (JSMember
+            (JSIdentifier "length")
+            (JSIdentifier "minString")
+          )
+        ,JSPostfixPlusUpdate
+          (JSIdentifier "i")
+        )
+        (JSBlock
+          [JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "currentMinDigit")
+            )
+            (JSCall
+              [JSMember
+                (JSIdentifier "i")
+                (JSIdentifier "minString")
+              ,JSNumber 10
+              ]
+              (JSIdentifier "parseInt")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "currentMaxDigit")
+            )
+            (JSCall
+              [JSMember
+                (JSIdentifier "i")
+                (JSIdentifier "maxString")
+              ,JSNumber 10
+              ]
+              (JSIdentifier "parseInt")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "currentMinDigits")
+            )
+            (JSCall
+              [JSCall
+                [JSNumber 0
+                ,JSPlus
+                  (JSIdentifier "i")
+                  (JSNumber 1)
+                ]
+                (JSMember
+                  (JSIdentifier "slice")
+                  (JSIdentifier "minString")
+                )
+              ]
+              (JSIdentifier "BigInt")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "currentMaxDigits")
+            )
+            (JSCall
+              [JSCall
+                [JSNumber 0
+                ,JSPlus
+                  (JSIdentifier "i")
+                  (JSNumber 1)
+                ]
+                (JSMember
+                  (JSIdentifier "slice")
+                  (JSIdentifier "maxString")
+                )
+              ]
+              (JSIdentifier "BigInt")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "nextDigit")
+            )
+            (JSCall
+              [JSNumber 0
+              ,JSNumber 9
+              ]
+              (JSIdentifier "getRandomNumber")
+            )
+          ,JSAssignment
+            (JSVariableDeclaration
+              (JSIdentifier "nextDigits")
+            )
+            (JSCall
+              [JSCall
+                [JSString ""]
+                (JSMember
+                  (JSIdentifier "join")
+                  (JSCall
+                    [JSIdentifier "nextDigit"]
+                    (JSMember
+                      (JSIdentifier "concat")
+                      (JSIdentifier "currentDigits")
+                    )
+                  )
+                )
+              ]
+              (JSIdentifier "BigInt")
+            )
+          ,JSIf
+            (JSGreater
+              (JSIdentifier "currentMinDigits")
+              (JSIdentifier "nextDigits")
+            )
+            (JSBlock
+              [JSAssignment
+                (JSIdentifier "nextDigit")
+                (JSCall
+                  [JSIdentifier "currentMinDigit"
+                  ,JSNumber 9
+                  ]
+                  (JSIdentifier "getRandomNumber")
+                )
+              ,JSAssignment
+                (JSIdentifier "nextDigits")
+                (JSCall
+                  [JSCall
+                    [JSString ""]
+                    (JSMember
+                      (JSIdentifier "join")
+                      (JSCall
+                        [JSIdentifier "nextDigit"]
+                        (JSMember
+                          (JSIdentifier "concat")
+                          (JSIdentifier "currentDigits")
+                        )
+                      )
+                    )
+                  ]
+                  (JSIdentifier "BigInt")
+                )
+              ,JSIf
+                (JSLess
+                  (JSIdentifier "currentMaxDigits")
+                  (JSIdentifier "nextDigits")
+                )
+                (JSBlock
+                  [JSAssignment
+                    (JSIdentifier "nextDigit")
+                    (JSCall
+                      [JSIdentifier "currentMinDigit"
+                      ,JSIdentifier "currentMaxDigit"
+                      ]
+                      (JSIdentifier "getRandomNumber")
+                    )
+                  ]
+                )
+                Nothing
+              ]
+            )
+            (Just
+              (JSIf
+                (JSLess
+                  (JSIdentifier "currentMaxDigits")
+                  (JSIdentifier "nextDigits")
+                )
+                (JSBlock
+                  [JSAssignment
+                    (JSIdentifier "nextDigit")
+                    (JSCall
+                      [JSNumber 0
+                      ,JSIdentifier "currentMaxDigit"
+                      ]
+                      (JSIdentifier "getRandomNumber")
+                    )
+                  ,JSAssignment
+                    (JSIdentifier "nextDigits")
+                    (JSCall
+                      [JSCall
+                        [JSString ""]
+                        (JSMember
+                          (JSIdentifier "join")
+                          (JSCall
+                            [JSIdentifier "nextDigit"]
+                            (JSMember
+                              (JSIdentifier "concat")
+                              (JSIdentifier "currentDigits")
+                            )
+                          )
+                        )
+                      ]
+                      (JSIdentifier "BigInt")
+                    )
+                  ,JSIf
+                    (JSGreater
+                      (JSIdentifier "currentMinDigits")
+                      (JSIdentifier "nextDigits")
+                    )
+                    (JSBlock
+                      [JSAssignment
+                        (JSIdentifier "nextDigit")
+                        (JSCall
+                          [JSIdentifier "currentMinDigit"
+                          ,JSIdentifier "currentMaxDigit"
+                          ]
+                          (JSIdentifier "getRandomNumber")
+                        )
+                      ]
+                    )
+                    Nothing
+                  ]
+                )
+                Nothing
+              )
+            )
+          ,JSCall
+            [JSIdentifier "nextDigit"]
+            (JSMember
+              (JSIdentifier "push")
+              (JSIdentifier "currentDigits")
+            )
+          ]
+        )
+      ,JSReturn
+        (JSCall
+          [JSCall
+            [JSString ""]
+            (JSMember
+              (JSIdentifier "join")
+              (JSIdentifier "currentDigits")
+            )
+          ]
+          (JSIdentifier "BigInt")
+        )
+      ]
+    )
+  ,JSFunctionDeclaration
+    (JSIdentifier "getRandomNumber")
+    [JSIdentifier "min"
+    ,JSIdentifier "max"
+    ]
+    (JSBlock
+      [JSReturn
+        (JSPlus
+          (JSCall
+            [JSTimes
+              (JSCall
+                []
+                (JSMember
+                  (JSIdentifier "random")
+                  (JSIdentifier "Math")
+                )
+              )
+              (JSMinus
+                (JSPlus
+                  (JSIdentifier "max")
+                  (JSNumber 1)
+                )
+                (JSIdentifier "min")
+              )
+            ]
+            (JSMember
+              (JSIdentifier "floor")
+              (JSIdentifier "Math")
+            )
+          )
+          (JSIdentifier "min")
+        )
+      ]
+    )
+  ]
+*/
