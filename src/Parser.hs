@@ -70,6 +70,7 @@ data Expression
   | JSOr Expression Expression
   | JSLeftShift Expression Expression
   | JSRightShift Expression Expression
+  | JSComment String
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -100,11 +101,18 @@ dot = Token.dot tokenParser
 
 programParser :: Parser Expression
 programParser = do
-  expressions <- many $ do
-    expression <- expressionParser
-    optional semi
-    return expression
-  return $ JSProgram expressions
+    skipMany firstSingleLineComment
+    expressions <- many $ do
+      expression <- expressionParser
+      optional semi
+      return expression
+    return $ JSProgram expressions
+    where
+      firstSingleLineComment = do
+        char '/'
+        char '/'
+        s <- many $ noneOf ['\n']
+        skipMany $ char '\n'
 
 expressionsParser :: Parser Expression
 expressionsParser = do
