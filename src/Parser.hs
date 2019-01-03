@@ -68,6 +68,8 @@ data Expression
   | JSBigInt Integer
   | JSAnd Expression Expression
   | JSOr Expression Expression
+  | JSLeftShift Expression Expression
+  | JSRightShift Expression Expression
   deriving (Eq, Show)
 
 -- Token Parsers
@@ -142,6 +144,9 @@ expressionParser = buildExpressionParser table parsers
         , Infix (reservedOp ">=" >> return JSGreaterOrEqual) AssocLeft
         , Infix (reservedOp "<" >> return JSLess) AssocLeft
         , Infix (reservedOp "<=" >> return JSLessOrEqual) AssocLeft
+        ]
+      , [ Infix (reservedOp "<<" >> return JSLeftShift) AssocLeft
+        , Infix (reservedOp ">>" >> return JSRightShift) AssocLeft
         ]
       , [ Infix (reservedOp "==" >> return JSLooseEqual) AssocLeft
         , Infix (reservedOp "!=" >> return JSLooseNotEqual) AssocLeft
