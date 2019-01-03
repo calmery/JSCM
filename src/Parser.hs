@@ -129,7 +129,7 @@ expressionParser = buildExpressionParser table parsers
   where
     table =
       [ [ (postfix . choice)
-          [ JSMember <$> (dot *> expressionParser)
+          [ JSMember <$> (dot *> parsers)
           , JSMember <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
           , (JSPostfixPlusUpdate <$ reservedOp "++")
