@@ -61,6 +61,7 @@ data Expression
   | JSCall [Expression] Expression
   | JSLabeled Expression Expression
   | JSMember Expression Expression
+  | JSObjectMember Expression Expression
   | JSPrefixPlus Expression
   | JSPrefixMinus Expression
   | JSPrefixPlusUpdate Expression
@@ -129,7 +130,7 @@ expressionParser = buildExpressionParser table parsers
   where
     table =
       [ [ (postfix . choice)
-          [ JSMember <$> (dot *> parsers)
+          [ JSObjectMember <$> (dot *> parsers)
           , JSMember <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
           , JSPostfixPlusUpdate <$ reservedOp "++"
