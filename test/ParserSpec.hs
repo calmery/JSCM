@@ -255,9 +255,9 @@ bitwiseOperatorsSpec =
       Right (JSProgram [JSAnd (JSNumber 1) (JSNumber 1)])
     parse "1 | 1" `shouldBe`
       Right (JSProgram [JSOr (JSNumber 1) (JSNumber 1)])
-    parse "1 >> 1" `shouldBe`
-      Right (JSProgram [JSLeftShift (JSNumber 1) (JSNumber 1)])
     parse "1 << 1" `shouldBe`
+      Right (JSProgram [JSLeftShift (JSNumber 1) (JSNumber 1)])
+    parse "1 >> 1" `shouldBe`
       Right (JSProgram [JSRightShift (JSNumber 1) (JSNumber 1)])
 
 spec :: Spec
@@ -279,3 +279,4 @@ spec =
     associativeArraySpec
     unaryOperatorsSpec
     bigIntegerSpec
+    bitwiseOperatorsSpec
