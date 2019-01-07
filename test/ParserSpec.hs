@@ -216,7 +216,7 @@ associativeArraySpec =
     parse "x.y" `shouldBe`
       Right (JSProgram [JSMember (JSIdentifier "y") (JSIdentifier "x")])
     parse "x.y.z" `shouldBe`
-      Right (JSProgram [JSMember (JSMember (JSIdentifier "z") (JSIdentifier "y")) (JSIdentifier "x")])
+      Right (JSProgram [JSMember (JSIdentifier "z") (JSMember (JSIdentifier "y") (JSIdentifier "x"))])
 
 unaryOperatorsSpec :: Spec
 unaryOperatorsSpec =
