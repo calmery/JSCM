@@ -6,6 +6,7 @@ import           RIO.List.Partial   (head)
 import           System.Environment (getArgs)
 import           System.IO          (IOMode (ReadMode), hClose, hGetContents,
                                      openFile, putStrLn)
+import           ToString           (toString)
 
 main :: IO ()
 main = do
@@ -16,7 +17,7 @@ main = do
     contents <- hGetContents handle
     putStrLn $ case parse fileName contents of
       Left e       -> show e
-      Right result -> show result
+      Right result -> toString result
     hClose handle
   else
     putStrLn "Argument not specified"
