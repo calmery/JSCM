@@ -104,10 +104,7 @@ dot = Token.dot tokenParser
 programParser :: Parser Expression
 programParser = do
     skipMany firstSingleLineComment
-    expressions <- many $ do
-      expression <- expressionParser
-      optional semi
-      return expression
+    expressions <- many lineParser
     return $ JSProgram expressions
     where
       firstSingleLineComment = do
@@ -118,11 +115,14 @@ programParser = do
 
 expressionsParser :: Parser Expression
 expressionsParser = do
-  expressions <- many $ do
-    expression <- expressionParser
-    optional semi
-    return expression
+  expressions <- many lineParser
   return $ JSBlock expressions
+
+lineParser :: Parser Expression
+lineParser = do
+  expression <- expressionParser
+  optional semi
+  return expression
 
 expressionParser :: Parser Expression
 expressionParser = buildExpressionParser table parsers
@@ -132,16 +132,16 @@ expressionParser = buildExpressionParser table parsers
           [ JSMember <$> (dot *> parsers)
           , JSMember <$> brackets expressionParser
           , JSCall <$> (parens . commaSep) expressionParser
-          , (JSPostfixPlusUpdate <$ reservedOp "++")
-          , (JSPostfixMinusUpdate <$ reservedOp "--")
+          , JSPostfixPlusUpdate <$ reservedOp "++"
+          , JSPostfixMinusUpdate <$ reservedOp "--"
           ]
         ]
       , [ (prefix . choice)
-          [ (JSPrefixNot <$ reservedOp "!")
-          , (JSPrefixPlus <$ reservedOp "+")
-          , (JSPrefixMinus <$ reservedOp "-")
-          , (JSPrefixPlusUpdate <$ reservedOp "++")
-          , (JSPrefixMinusUpdate <$ reservedOp "--")
+          [ JSPrefixNot <$ reservedOp "!"
+          , JSPrefixPlus <$ reservedOp "+"
+          , JSPrefixMinus <$ reservedOp "-"
+          , JSPrefixPlusUpdate <$ reservedOp "++"
+          , JSPrefixMinusUpdate <$ reservedOp "--"
           ]
         ]
       , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
@@ -207,8 +207,7 @@ blockParser = try (braces hashParser) <|> braces expressionsParser
       labels <- commaSep $ do
         label <- identifier
         colon
-        expression <- expressionParser
-        return $ JSLabeled label expression
+        JSLabeled label <$> expressionParser
       return $ JSBlock labels
 
 whileParser :: Parser Expression
@@ -277,8 +276,7 @@ switchParser = do
 variableParser :: Parser Expression
 variableParser = do
   reserved "var"
-  label <- identifier
-  return $ JSVariableDeclaration label
+  JSVariableDeclaration <$> identifier
 
 functionParser :: Parser Expression
 functionParser = do
@@ -288,14 +286,12 @@ functionParser = do
     label <- identifier
     optional comma
     return label
-  expressions <- expressionParser
-  return $ JSFunctionDeclaration name arguments expressions
+  JSFunctionDeclaration name arguments <$> expressionParser
 
 returnParser :: Parser Expression
 returnParser = do
   reserved "return"
-  expression <- expressionParser
-  return $ JSReturn expression
+  JSReturn <$> expressionParser
 
 arrayParser :: Parser Expression
 arrayParser = brackets $ do
