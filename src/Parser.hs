@@ -267,10 +267,12 @@ switchParser = do
       reserved "case"
       expression <- expressionParser
       char ':'
+      skipMany $ char '\n' <|> space
       JSCase expression <$> expressionsParser
     switchDefaultParser = do
       reserved "default"
       char ':'
+      skipMany $ char '\n' <|> space
       JSDefault <$> expressionsParser
 
 variableParser :: Parser Expression
