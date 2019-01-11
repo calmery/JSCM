@@ -3,8 +3,7 @@ module Parser (parse, Expression(..)) where
 import           RIO                    hiding (many, optional, try)
 import           Text.Parsec            (many, skipMany)
 import qualified Text.Parsec            as Parsec
-import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space,
-                                         tab)
+import           Text.Parsec.Char       (char, newline, noneOf, oneOf, space, tab)
 import           Text.Parsec.Combinator (chainl1, choice, optionMaybe, optional)
 import           Text.Parsec.Expr       (Assoc (AssocLeft),
                                          Operator (Infix, Postfix, Prefix),
