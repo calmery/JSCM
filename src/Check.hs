@@ -1,4 +1,4 @@
-module Check (checkIsPureFunction) where
+module Check (checkIsPureFunction, JSFunctionDeclarations) where
 
 import           Parser (Expression (..))
 import           RIO
@@ -13,11 +13,15 @@ type JSFunctionDeclarations = [Declaration]
 type JSFunctionIdentifier = String
 type JSFunctionExpression = Expression
 
+nativeFunctionDeclarations :: JSFunctionDeclarations
+nativeFunctionDeclarations =
+  map (\identifier -> (identifier, JSEmpty, True)) ["BigInt", "parseInt", "Math", "console"]
+
 -- Get Function Declarations
 
 checkIsPureFunction :: JSFunctionDeclarations -> JSFunctionIdentifier -> Either String Bool
 checkIsPureFunction functionDeclarations identifier = case getJSFunctionExpression functionDeclarations identifier of
-  Just expression -> Right $ isPureFunction functionDeclarations expression -- isPureFunction' functionDeclarations functionDeclarations expression
+  Just expression -> Right $ isPureFunction (functionDeclarations ++ nativeFunctionDeclarations) expression -- isPureFunction' functionDeclarations functionDeclarations expression
   Nothing         -> Left $ identifier ++ " not found"
   where
     getJSFunctionExpression [] _ = Nothing

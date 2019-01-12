@@ -7,6 +7,7 @@ import           System.Environment (getArgs)
 import           System.IO          (IOMode (ReadMode), hClose, hGetContents,
                                      openFile, putStrLn)
 import           ToString           (toString)
+import           Transform          (transform)
 
 main :: IO ()
 main = do
@@ -17,7 +18,7 @@ main = do
     contents <- hGetContents handle
     putStrLn $ case parse fileName contents of
       Left e       -> show e
-      Right result -> toString result
+      Right result -> toString $ transform result
     hClose handle
   else
     putStrLn "Argument not specified"

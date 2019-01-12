@@ -7,6 +7,7 @@ toString :: Expression -> String
 toString (JSProgram expressions) = unwords $ map toString expressions
 toString (JSBlock expressions) = "{\n" ++ (unwords $ map toString expressions) ++ "\n}"
 toString (JSNumber number) = show number
+toString (JSNativeCode x) = x
 toString (JSPlus x y) = "(" ++ toString x ++ " + " ++ toString y ++ ")"
 toString (JSMinus x y) = "(" ++ toString x ++ " - " ++ toString y ++ ")"
 toString (JSTimes x y) = "(" ++ toString x ++ " * " ++ toString y ++ ")"
