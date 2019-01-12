@@ -1,6 +1,5 @@
-module Check (result) where
+module Check (checkIsPureFunction) where
 
-import           Dummy  (dummyData)
 import           Parser (Expression (..))
 import           RIO
 
@@ -13,17 +12,6 @@ type JSUpdatedLocalDeclarations = [Declaration]
 type JSFunctionDeclarations = [Declaration]
 type JSFunctionIdentifier = String
 type JSFunctionExpression = Expression
-
--- Result
-
-result :: Either String Bool
-result = checkIsPureFunction functionDeclarations "getRandomPrimeNumber"
-  where
-    functionDeclarations = getFunctionDeclarations dummyData -- Temporal Dummy Data
-    getFunctionDeclarations (JSProgram expressions) = map transformToDeclaration $ filter checkIsJSFunctionDeclaration expressions
-    transformToDeclaration functionDeclaration@(JSFunctionDeclaration (JSIdentifier identifier) _ _) = (identifier, functionDeclaration, False)
-    checkIsJSFunctionDeclaration (JSFunctionDeclaration _ _ _) = True
-    checkIsJSFunctionDeclaration _                             = False
 
 -- Get Function Declarations
 
