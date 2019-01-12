@@ -26,7 +26,7 @@ toString (JSIfStatement condition body elseBody) = "if (" ++ toString condition 
   Just elseBody' -> " else " ++ toString elseBody'
   Nothing        -> "") ++ "\n"
 toString (JSLabeledStatement identifier body) = toString identifier ++ ": " ++ toString body ++ ","
-toString (JSReturnStatement body) = "return " ++ toString body ++ ";\n"
+toString (JSReturnStatement body) = "return " ++ toString body ++ "\n"
 toString (JSSwitchStatement condition body) = "switch (" ++ toString condition ++ ")" ++ toString body ++ "\n"
 toString (JSTryStatement body JSEmpty catchBody finallyBody) =
   "try"
