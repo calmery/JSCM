@@ -5,67 +5,44 @@ import           RIO
 
 toString :: Expression -> String
 toString (JSProgram expressions) = unwords $ map toString expressions
-toString (JSBlock expressions) = "{\n" ++ (unwords $ map toString expressions) ++ "\n}"
-toString (JSNumber number) = show number
-toString (JSNativeCode x) = x
-toString (JSPlus x y) = "(" ++ toString x ++ " + " ++ toString y ++ ")"
-toString (JSMinus x y) = "(" ++ toString x ++ " - " ++ toString y ++ ")"
-toString (JSTimes x y) = "(" ++ toString x ++ " * " ++ toString y ++ ")"
-toString (JSDivide x y) = "(" ++ toString x ++ " / " ++ toString y ++ ")"
-toString (JSModulo x y) = "(" ++ toString x ++ " % " ++ toString y ++ ")"
-toString (JSExponentiation x y) = "(" ++ toString x ++ " ** " ++ toString y ++ ")"
-toString (JSLooseEqual x y) = "(" ++ toString x ++ " == " ++ toString y ++ ")"
-toString (JSLooseNotEqual x y) = "(" ++ toString x ++ " != " ++ toString y ++ ")"
-toString (JSStrictEqual x y) = "(" ++ toString x ++ " === " ++ toString y ++ ")"
-toString (JSStrictNotEqual x y) = "(" ++ toString x ++ " !== " ++ toString y ++ ")"
-toString (JSGreater x y) = "(" ++ toString x ++ " > " ++ toString y ++ ")"
-toString (JSGreaterOrEqual x y) = "(" ++ toString x ++ " >= " ++ toString y ++ ")"
-toString (JSLess x y) = "(" ++ toString x ++ " < " ++ toString y ++ ")"
-toString (JSLessOrEqual x y) = "(" ++ toString x ++ " <= " ++ toString y ++ ")"
-toString (JSBoolean boolean) = if boolean then "true" else "false"
-toString JSContinue = "continue\n"
-toString JSBreak = "break\n"
-toString (JSWhile x y) = "while (" ++ toString x ++ ")" ++ toString y ++ "\n"
-toString (JSAssignment x y) = toString x ++ " = " ++ toString y ++ "\n"
 toString (JSIdentifier identifier) = identifier
-toString (JSVariableDeclaration x) = "var " ++ toString x
-toString (JSIf x y z) = "if (" ++ toString x ++ ")" ++ toString y ++ (case z of
-  Just z' -> " else " ++ toString z'
-  Nothing -> "") ++ "\n"
-toString (JSFor (x, y, z) a) = "for (" ++ toString x ++ "; " ++ toString y ++ "; " ++ toString z ++ ")" ++ toString a ++ "\n"
-toString JSEmpty                = ""
-toString (JSTryCatch tryExpressions JSEmpty catchExpressions finallyExpressions) =
+toString (JSBooleanLiteral boolean) = if boolean then "true" else "false"
+toString (JSNumberLiteral number) = show number
+toString (JSStringLiteral string) = "\"" ++ string ++ "\""
+toString (JSArrayExpression xs) = "[" ++ (unwords $ map (\x -> toString x ++ ",") xs) ++ "]"
+toString (JSAssignmentExpression identifier body) = toString identifier ++ " = " ++ toString body ++ "\n"
+toString (JSBinaryExpression operator x y) = "(" ++ toString x ++ operator ++ toString y ++ ")"
+toString (JSCallExpression arguments identifier) = toString identifier ++ "(" ++ (unwords $ map (\argument -> toString argument ++ ",") arguments) ++ ")" ++ "\n"
+toString (JSMemberExpression x y) = toString y ++ "[" ++ toString x ++ "]"
+toString (JSObjectMemberExpression x y) = toString y ++ "." ++ toString x
+toString (JSPostfixUpdateExpression operator x) = "(" ++ toString x ++ operator ++ ")"
+toString (JSPrefixUpdateExpression operator x) = "(" ++ operator ++ toString x ++ ")"
+toString (JSUnaryExpression operator x) = "(" ++ operator ++ toString x ++ ")"
+toString (JSBlockStatement expressions) = "{\n" ++ (unwords $ map toString expressions) ++ "\n}"
+toString JSBreakStatement = "break\n"
+toString JSContinueStatement = "continue\n"
+toString (JSForStatement (x, y, z) body) = "for (" ++ toString x ++ "; " ++ toString y ++ "; " ++ toString z ++ ")" ++ toString body ++ "\n"
+toString (JSIfStatement condition body elseBody) = "if (" ++ toString condition ++ ")" ++ toString body ++ (case elseBody of
+  Just elseBody' -> " else " ++ toString elseBody'
+  Nothing        -> "") ++ "\n"
+toString (JSLabeledStatement identifier body) = toString identifier ++ ": " ++ toString body ++ ","
+toString (JSReturnStatement body) = "return " ++ toString body ++ ";\n"
+toString (JSSwitchStatement condition body) = "switch (" ++ toString condition ++ ")" ++ toString body ++ "\n"
+toString (JSTryStatement body JSEmpty catchBody finallyBody) =
   "try"
-    ++ toString tryExpressions
+    ++ toString body
     ++ "catch (_)"
-    ++ toString catchExpressions
-    ++ (case finallyExpressions of
-      Just f  -> "finally" ++ toString f
-      Nothing -> "")
+    ++ toString catchBody
+    ++ (case finallyBody of
+      Just finallyBody' -> "finally" ++ toString finallyBody'
+      Nothing           -> "")
     ++ "\n"
-toString (JSSwitch x y) = "switch (" ++ toString x ++ ")" ++ toString y ++ "\n"
-toString (JSCase x y) = "case " ++ toString x ++ ": " ++ toString y
-toString (JSDefault x) = "default: " ++ toString x
-toString (JSString x) = "\"" ++ x ++ "\""
-toString (JSFunctionDeclaration (JSIdentifier x) ys z) = "function " ++ x ++ "(" ++ (unwords $ map (\y -> toString y ++ ",") ys) ++ ")" ++ toString z ++ "\n"
-toString (JSReturn x) = "return " ++ toString x
-toString (JSArray xs) = "[" ++ (unwords $ map (\x -> toString x ++ ",") xs) ++ "]"
-toString (JSAndLogical x y) = toString x ++ " && " ++ toString y
-toString (JSOrLogical x y) = toString x ++ " || " ++ toString y
-toString (JSPrefixNot x) = "!" ++ toString x
-toString (JSCall xs y) = toString y ++ "(" ++ (unwords $ map (\x -> toString x ++ ",") xs) ++ ")" ++ "\n"
-toString (JSLabeled x y) = toString x ++ ": " ++ toString y ++ ","
-toString (JSObjectMember x y) = toString y ++ "." ++ toString x
-toString (JSMember x y) = toString y ++ "[" ++ toString x ++ "]"
-toString (JSPrefixPlus x) = "(" ++ "+" ++ toString x ++ ")"
-toString (JSPrefixMinus x) = "(" ++ "-" ++ toString x ++ ")"
-toString (JSPrefixPlusUpdate x) = "(" ++ "++" ++ toString x ++ ")"
-toString (JSPrefixMinusUpdate x) = "(" ++ "--" ++ toString x ++ ")"
-toString (JSBigInt x) = show x ++ "n"
-toString (JSAnd x y) = "(" ++ toString x ++ " & " ++ toString y ++ ")"
-toString (JSOr x y) = "(" ++ toString x ++ " | " ++ toString y ++ ")"
-toString (JSLeftShift x y) = "(" ++ toString x ++ " << " ++ toString y ++ ")"
-toString (JSRightShift x y) = "(" ++ toString x ++ " >> " ++ toString y ++ ")"
-toString (JSPostfixPlusUpdate x) = "(" ++ toString x ++ "++" ++ ")"
-toString (JSPostfixMinusUpdate x) = "(" ++ toString x ++ "--" ++ ")"
-toString _                      = ""
+toString (JSWhileStatement condition body) = "while (" ++ toString condition ++ ")" ++ toString body ++ "\n"
+toString (JSFunctionDeclaration (JSIdentifier identifier) arguments body) =
+  "function " ++ identifier ++ "(" ++ (unwords $ map (\argument -> toString argument ++ ",") arguments) ++ ")" ++ toString body ++ "\n"
+toString (JSVariableDeclaration identifier) = "var " ++ toString identifier
+toString (JSSwitchCase identifier body) = "case " ++ toString identifier ++ ": " ++ toString body
+toString (JSSwitchDefault body) = "default: " ++ toString body
+toString JSEmpty = ""
+toString (JSInternalCode string) = string
+toString _ = ""

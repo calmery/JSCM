@@ -17,108 +17,75 @@ import           TokenParser            (tokenParser)
 parse :: String -> String -> Either Parsec.ParseError Expression
 parse = Parsec.parse programParser
 
--- Data
-
 data Expression
   = JSProgram [Expression]
-  | JSBlock [Expression]
-  | JSNumber Integer
-  | JSNativeCode String
-  | JSPlus Expression Expression
-  | JSMinus Expression Expression
-  | JSTimes Expression Expression
-  | JSDivide Expression Expression
-  | JSModulo Expression Expression
-  | JSExponentiation Expression Expression
-  | JSLooseEqual Expression Expression
-  | JSLooseNotEqual Expression Expression
-  | JSStrictEqual Expression Expression
-  | JSStrictNotEqual Expression Expression
-  | JSGreater Expression Expression
-  | JSGreaterOrEqual Expression Expression
-  | JSLess Expression Expression
-  | JSLessOrEqual Expression Expression
-  | JSBoolean Bool
-  | JSWhile Expression Expression
-  | JSContinue
-  | JSBreak
-  | JSAssignment Expression Expression
   | JSIdentifier String
-  | JSVariableDeclaration Expression
-  | JSIf Expression Expression (Maybe Expression)
-  | JSFor (Expression, Expression, Expression) Expression
-  | JSEmpty
-  | JSTryCatch Expression Expression Expression (Maybe Expression)
-  | JSSwitch Expression Expression
-  | JSCase Expression Expression
-  | JSDefault Expression
-  | JSString String
+  | JSBooleanLiteral Bool
+  | JSNumberLiteral Integer
+  | JSStringLiteral String
+  | JSArrayExpression [Expression]
+  | JSAssignmentExpression Expression Expression
+  | JSBinaryExpression String Expression Expression
+  | JSCallExpression [Expression] Expression
+  | JSMemberExpression Expression Expression
+  | JSObjectMemberExpression Expression Expression
+  | JSPostfixUpdateExpression String Expression
+  | JSPrefixUpdateExpression String Expression
+  | JSUnaryExpression String Expression
+  | JSBlockStatement [Expression]
+  | JSBreakStatement
+  | JSContinueStatement
+  | JSForStatement (Expression, Expression, Expression) Expression
+  | JSIfStatement Expression Expression (Maybe Expression)
+  | JSLabeledStatement Expression Expression
+  | JSReturnStatement Expression
+  | JSSwitchStatement Expression Expression
+  | JSTryStatement Expression Expression Expression (Maybe Expression)
+  | JSWhileStatement Expression Expression
   | JSFunctionDeclaration Expression [Expression] Expression
-  | JSReturn Expression
-  | JSArray [Expression]
-  | JSAndLogical Expression Expression
-  | JSOrLogical Expression Expression
-  | JSPrefixNot Expression
-  | JSCall [Expression] Expression
-  | JSLabeled Expression Expression
-  | JSMember Expression Expression
-  | JSObjectMember Expression Expression
-  | JSPrefixPlus Expression
-  | JSPrefixMinus Expression
-  | JSPrefixPlusUpdate Expression
-  | JSPrefixMinusUpdate Expression
-  | JSBigInt Integer
-  | JSAnd Expression Expression
-  | JSOr Expression Expression
-  | JSLeftShift Expression Expression
-  | JSRightShift Expression Expression
+  | JSVariableDeclaration Expression
+  | JSSwitchCase Expression Expression
+  | JSSwitchDefault Expression
   | JSComment String
-  | JSPostfixPlusUpdate Expression
-  | JSPostfixMinusUpdate Expression
+  | JSEmpty
+  | JSInternalCode String
   deriving (Eq, Show)
 
--- Token Parsers
-
--- https://stackoverflow.com/questions/10475337/parsec-expr-repeated-prefix-postfix-operator-not-supported?lq=1
+-- haskell - Parsec.Expr repeated Prefix/Postfix operator not supported - Stack Overflow
+-- https://stackoverflow.com/questions/10475337/parsec-expr-repeated-prefix-postfix-operator-not-supported
 postfix p = Postfix . chainl1 p $ return (flip (.))
 prefix p = Prefix . chainl1 p $ return (.)
 
-reserved :: String -> Parser ()
-reserved = Token.reserved tokenParser
-
-reservedOp :: String -> Parsec.ParsecT String () Identity ()
-reservedOp = Token.reservedOp tokenParser
-
-symbol :: String -> Parsec.ParsecT String () Identity String
-symbol = Token.symbol tokenParser
-
-commaSep = Token.commaSep tokenParser
-parens = Token.parens tokenParser
 braces = Token.braces tokenParser
 brackets = Token.brackets tokenParser
-semi = Token.semi tokenParser
-comma = Token.comma tokenParser
 colon = Token.colon tokenParser
+comma = Token.comma tokenParser
+commaSep = Token.commaSep tokenParser
 dot = Token.dot tokenParser
+parens = Token.parens tokenParser
+reserved = Token.reserved tokenParser
+reservedOp = Token.reservedOp tokenParser
+semi = Token.semi tokenParser
+symbol = Token.symbol tokenParser
 
 -- Parsers
 
 programParser :: Parser Expression
 programParser = do
-    skipMany firstSingleLineComment
-    expressions <- many lineParser
-    return $ JSProgram expressions
-    where
-      firstSingleLineComment = do
-        char '/'
-        char '/'
-        s <- many $ noneOf ['\n']
-        skipMany $ char '\n'
+  skipMany firstSingleLineComment
+  expressions <- many lineParser
+  return $ JSProgram expressions
+  where
+    firstSingleLineComment = do
+      char '/'
+      char '/'
+      _ <- many $ noneOf ['\n']
+      skipMany newline
 
 expressionsParser :: Parser Expression
 expressionsParser = do
   expressions <- many lineParser
-  return $ JSBlock expressions
+  return $ JSBlockStatement expressions
 
 lineParser :: Parser Expression
 lineParser = do
@@ -131,120 +98,150 @@ expressionParser = buildExpressionParser table parsers
   where
     table =
       [ [ (postfix . choice)
-          [ JSObjectMember <$> (dot *> parsers)
-          , JSMember <$> brackets expressionParser
-          , JSCall <$> (parens . commaSep) expressionParser
-          , JSPostfixPlusUpdate <$ reservedOp "++"
-          , JSPostfixMinusUpdate <$ reservedOp "--"
+          [ JSObjectMemberExpression <$> (dot *> parsers)
+          , JSMemberExpression <$> brackets expressionParser
+          , JSCallExpression <$> (parens . commaSep) expressionParser
+          , JSPostfixUpdateExpression "++" <$ reservedOp "++"
+          , JSPostfixUpdateExpression "--" <$ reservedOp "--"
           ]
         ]
       , [ (prefix . choice)
-          [ JSPrefixNot <$ reservedOp "!"
-          , JSPrefixPlus <$ reservedOp "+"
-          , JSPrefixMinus <$ reservedOp "-"
-          , JSPrefixPlusUpdate <$ reservedOp "++"
-          , JSPrefixMinusUpdate <$ reservedOp "--"
+          [ JSUnaryExpression "!" <$ reservedOp "!"
+          , JSUnaryExpression "+" <$ reservedOp "+"
+          , JSUnaryExpression "-" <$ reservedOp "-"
+          , JSPrefixUpdateExpression "++" <$ reservedOp "++"
+          , JSPrefixUpdateExpression "--" <$ reservedOp "--"
           ]
         ]
-      , [ Infix (reservedOp "**" >> return JSExponentiation) AssocLeft
-        , Infix (reservedOp "*" >> return JSTimes) AssocLeft
-        , Infix (reservedOp "/" >> return JSDivide) AssocLeft
-        , Infix (reservedOp "%" >> return JSModulo) AssocLeft
+      , [ Infix (reservedOp "**" >> (return $ JSBinaryExpression "**")) AssocLeft
+        , Infix (reservedOp "*" >> (return $ JSBinaryExpression "*")) AssocLeft
+        , Infix (reservedOp "/" >> (return $ JSBinaryExpression "/")) AssocLeft
+        , Infix (reservedOp "%" >> (return $ JSBinaryExpression "%")) AssocLeft
         ]
-      , [ Infix (reservedOp "+" >> return JSPlus) AssocLeft
-        , Infix (reservedOp "-" >> return JSMinus) AssocLeft
+      , [ Infix (reservedOp "+" >> (return $ JSBinaryExpression "+")) AssocLeft
+        , Infix (reservedOp "-" >> (return $ JSBinaryExpression "-")) AssocLeft
         ]
-      , [ Infix (reservedOp ">" >> return JSGreater) AssocLeft
-        , Infix (reservedOp ">=" >> return JSGreaterOrEqual) AssocLeft
-        , Infix (reservedOp "<" >> return JSLess) AssocLeft
-        , Infix (reservedOp "<=" >> return JSLessOrEqual) AssocLeft
+      , [ Infix (reservedOp ">" >> (return $ JSBinaryExpression ">")) AssocLeft
+        , Infix (reservedOp ">=" >> (return $ JSBinaryExpression ">=")) AssocLeft
+        , Infix (reservedOp "<" >> (return $ JSBinaryExpression "<")) AssocLeft
+        , Infix (reservedOp "<=" >> (return $ JSBinaryExpression "<=")) AssocLeft
         ]
-      , [ Infix (reservedOp "<<" >> return JSLeftShift) AssocLeft
-        , Infix (reservedOp ">>" >> return JSRightShift) AssocLeft
+      , [ Infix (reservedOp "<<" >> (return $ JSBinaryExpression "<<")) AssocLeft
+        , Infix (reservedOp ">>" >> (return $ JSBinaryExpression ">>")) AssocLeft
         ]
-      , [ Infix (reservedOp "==" >> return JSLooseEqual) AssocLeft
-        , Infix (reservedOp "!=" >> return JSLooseNotEqual) AssocLeft
-        , Infix (reservedOp "===" >> return JSStrictEqual) AssocLeft
-        , Infix (reservedOp "!==" >> return JSStrictNotEqual) AssocLeft
+      , [ Infix (reservedOp "==" >> (return $ JSBinaryExpression "==")) AssocLeft
+        , Infix (reservedOp "!=" >> (return $ JSBinaryExpression "!=")) AssocLeft
+        , Infix (reservedOp "===" >> (return $ JSBinaryExpression "===")) AssocLeft
+        , Infix (reservedOp "!==" >> (return $ JSBinaryExpression "!==")) AssocLeft
         ]
-      , [ Infix (reservedOp "&" >> return JSAnd) AssocLeft
-        , Infix (reservedOp "|" >> return JSOr) AssocLeft
+      , [ Infix (reservedOp "&" >> (return $ JSBinaryExpression "&")) AssocLeft
+        , Infix (reservedOp "|" >> (return $ JSBinaryExpression "|")) AssocLeft
         ]
-      , [ Infix (reservedOp "&&" >> return JSAndLogical) AssocLeft
-        , Infix (reservedOp "||" >> return JSOrLogical) AssocLeft
+      , [ Infix (reservedOp "&&" >> (return $ JSBinaryExpression "&&")) AssocLeft
+        , Infix (reservedOp "||" >> (return $ JSBinaryExpression "||")) AssocLeft
         ]
-      , [ Infix (reservedOp "=" >> return JSAssignment) AssocLeft
+      , [ Infix (reservedOp "=" >> return JSAssignmentExpression) AssocLeft
         ]
       ]
 
 parsers :: Parser Expression
 parsers = parensParser
-  <|> blockParser
-  <|> whileParser
-  <|> ifParser
-  <|> forParser
-  <|> tryCatchParser
-  <|> switchParser
-  <|> variableParser
-  <|> functionParser
-  <|> returnParser
-  <|> arrayParser
-  <|> continueParser
-  <|> breakParser
-  <|> boolean
-  <|> try bigint
-  <|> integer
-  <|> string
-  <|> identifier
-
--- Statements
+  <|> blockStatementParser
+  <|> breakStatementParser
+  <|> continueStatementParser
+  <|> forStatementParser
+  <|> ifStatementParser
+  <|> returnStatementParser
+  <|> switchStatementParser
+  <|> tryStatementParser
+  <|> whileStatementParser
+  <|> functionDeclarationParser
+  <|> variableDeclarationParser
+  <|> arrayExpressionParser
+  <|> booleanLiteralParser
+  <|> numberLiteralParser
+  <|> stringLiteralParser
+  <|> identifierParser
 
 parensParser :: Parser Expression
-parensParser = parens expressionParser -- 括弧付き
+parensParser = parens expressionParser
 
-blockParser :: Parser Expression
-blockParser = try (braces hashParser) <|> braces expressionsParser
+-- Statement
+
+blockStatementParser :: Parser Expression
+blockStatementParser = try (braces hashParser) <|> braces expressionsParser
   where
     hashParser = do
       labels <- commaSep $ do
-        label <- identifier
+        label <- identifierParser
         colon
-        JSLabeled label <$> expressionParser
-      return $ JSBlock labels
+        JSLabeledStatement label <$> expressionParser
+      return $ JSBlockStatement labels
 
-whileParser :: Parser Expression
-whileParser = do
-  reserved "while"
-  expression <- parens expressionParser
-  JSWhile expression <$> expressionParser
+breakStatementParser :: Parser Expression
+breakStatementParser = do
+  reserved "break"
+  return JSBreakStatement
 
-ifParser :: Parser Expression
-ifParser = do
-  reserved "if"
-  expression <- parens expressionParser
-  expressions <- expressionParser
-  elseExpressions <- optionMaybe $ do
-    reserved "else"
-    expressionParser
-  return $ JSIf expression expressions elseExpressions
+continueStatementParser :: Parser Expression
+continueStatementParser = do
+  reserved "continue"
+  return JSContinueStatement
 
-forParser :: Parser Expression
-forParser = do
+forStatementParser :: Parser Expression
+forStatementParser = do
   reserved "for"
   expressions <- parens $ do
     one <- e <|> semi $> JSEmpty
     two <- e <|> semi $> JSEmpty
     three <- expressionParser <|> return JSEmpty
     return (one, two, three)
-  JSFor expressions <$> expressionParser
+  JSForStatement expressions <$> expressionParser
   where
     e = do
       expression <- expressionParser
       semi
       return expression
 
-tryCatchParser :: Parser Expression
-tryCatchParser = do
+ifStatementParser :: Parser Expression
+ifStatementParser = do
+  reserved "if"
+  expression <- parens expressionParser
+  expressions <- expressionParser
+  elseExpressions <- optionMaybe $ do
+    reserved "else"
+    expressionParser
+  return $ JSIfStatement expression expressions elseExpressions
+
+returnStatementParser :: Parser Expression
+returnStatementParser = do
+  reserved "return"
+  JSReturnStatement <$> expressionParser
+
+switchStatementParser :: Parser Expression
+switchStatementParser = do
+  reserved "switch"
+  expression <- parens expressionParser
+  block <- braces switchBlockParser
+  return $ JSSwitchStatement expression block
+  where
+    switchBlockParser = do
+      expressions <- many $ switchCaseParser <|> switchDefaultParser
+      return $ JSBlockStatement expressions
+    switchCaseParser = do
+      reserved "case"
+      expression <- expressionParser
+      char ':'
+      skipMany $ newline <|> space
+      JSSwitchCase expression <$> expressionsParser
+    switchDefaultParser = do
+      reserved "default"
+      char ':'
+      skipMany $ newline <|> space
+      JSSwitchDefault <$> expressionsParser
+
+tryStatementParser :: Parser Expression
+tryStatementParser = do
   reserved "try"
   tryExpressions <- expressionParser
   reserved "catch"
@@ -253,93 +250,60 @@ tryCatchParser = do
   finallyExpressions <- optionMaybe $ do
     reserved "finally"
     expressionParser
-  return $ JSTryCatch tryExpressions JSEmpty catchExpressions finallyExpressions
+  return $ JSTryStatement tryExpressions JSEmpty catchExpressions finallyExpressions
 
-switchParser :: Parser Expression
-switchParser = do
-  reserved "switch"
+whileStatementParser :: Parser Expression
+whileStatementParser = do
+  reserved "while"
   expression <- parens expressionParser
-  block <- braces switchBlockParser
-  return $ JSSwitch expression block
-  where
-    switchBlockParser = do
-      expressions <- many $ switchCaseParser <|> switchDefaultParser
-      return $ JSBlock expressions
-    switchCaseParser = do
-      reserved "case"
-      expression <- expressionParser
-      char ':'
-      skipMany $ char '\n' <|> space
-      JSCase expression <$> expressionsParser
-    switchDefaultParser = do
-      reserved "default"
-      char ':'
-      skipMany $ char '\n' <|> space
-      JSDefault <$> expressionsParser
+  JSWhileStatement expression <$> expressionParser
 
-variableParser :: Parser Expression
-variableParser = do
-  reserved "var"
-  JSVariableDeclaration <$> identifier
+-- Declaration
 
-functionParser :: Parser Expression
-functionParser = do
+functionDeclarationParser :: Parser Expression
+functionDeclarationParser = do
   reserved "function"
-  name <- identifier
+  name <- identifierParser
   arguments <- parens $ many $ do
-    label <- identifier
+    label <- identifierParser
     optional comma
     return label
   JSFunctionDeclaration name arguments <$> expressionParser
 
-returnParser :: Parser Expression
-returnParser = do
-  reserved "return"
-  JSReturn <$> expressionParser
+variableDeclarationParser :: Parser Expression
+variableDeclarationParser = do
+  reserved "var"
+  JSVariableDeclaration <$> identifierParser
 
-arrayParser :: Parser Expression
-arrayParser = brackets $ do
+-- Expression
+
+arrayExpressionParser :: Parser Expression
+arrayExpressionParser = brackets $ do
   expressions <- many $ do
     expression <- expressionParser
     optional comma
     return expression
-  return $ JSArray expressions
+  return $ JSArrayExpression expressions
 
--- Values
+-- Literal
 
-continueParser :: Parser Expression
-continueParser = do
-  reserved "continue"
-  return JSContinue
-
-breakParser :: Parser Expression
-breakParser = do
-  reserved "break"
-  return JSBreak
-
-boolean :: Parser Expression
-boolean = true <|> false
+booleanLiteralParser :: Parser Expression
+booleanLiteralParser = true <|> false
   where
     true = do
       reserved "true"
-      return $ JSBoolean True
+      return $ JSBooleanLiteral True
     false = do
       reserved "false"
-      return $ JSBoolean False
+      return $ JSBooleanLiteral False
 
-integer :: Parser Expression
-integer = do
+numberLiteralParser :: Parser Expression
+numberLiteralParser = do
   xs <- Token.integer tokenParser
-  return $ JSNumber xs
+  return $ JSNumberLiteral xs
 
-bigint :: Parser Expression
-bigint = do
-  xs <- Token.integer tokenParser
-  symbol "n"
-  return $ JSBigInt xs
-
-string :: Parser Expression
-string = do
+stringLiteralParser :: Parser Expression
+stringLiteralParser = do
   singleOrDouble <- char '"' <|> char '\''
   let targets = singleOrDouble:['\\', '\n', '\r', '\v', '\t', '\b', '\f']
   xxs <- many $ do
@@ -351,9 +315,11 @@ string = do
       return [backslashes, target]
   char singleOrDouble
   skipMany $ space <|> tab <|> newline
-  return $ JSString $ concat xxs
+  return $ JSStringLiteral $ concat xxs
 
-identifier :: Parser Expression
-identifier = do
+-- Identifier
+
+identifierParser :: Parser Expression
+identifierParser = do
   xs <- Token.identifier tokenParser
   return $ JSIdentifier xs

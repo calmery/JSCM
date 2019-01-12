@@ -13,7 +13,7 @@ transform (JSProgram expressions) = JSProgram (transform' callExpressionIdentifi
     callExpressionIdentifiers = getCallExpressionIdentifiers expressions
     functionDeclarations = getFunctionDeclarations expressions
     getCallExpressionIdentifiers []              = []
-    getCallExpressionIdentifiers (callExpression@(JSCall _ (JSIdentifier identifier)):expressions) = identifier:getCallExpressionIdentifiers expressions
+    getCallExpressionIdentifiers (callExpression@(JSCallExpression _ (JSIdentifier identifier)):expressions) = identifier:getCallExpressionIdentifiers expressions
     getCallExpressionIdentifiers (_:expressions) = getCallExpressionIdentifiers expressions
     getFunctionDeclarations expressions = map transformToDeclaration $ filter checkIsJSFunctionDeclaration expressions
     transformToDeclaration functionDeclaration@(JSFunctionDeclaration (JSIdentifier identifier) _ _) = (identifier, functionDeclaration, False)
@@ -29,8 +29,8 @@ transform' callExpressionIdentifiers functionDeclarations (expression@(JSFunctio
           JSFunctionDeclaration
             (JSIdentifier identifier)
             arguments
-            (JSBlock
-              [JSNativeCode $
+            (JSBlockStatement
+              [JSInternalCode $
                 "var _w=new Worker(URL.createObjectURL(new Blob([`" ++
                 (unwords $ map (\(_, expression, _) -> toString expression) functionDeclarations) ++
                 "onmessage=function(e){" ++ identifier ++ ".apply(this,e.data)};" ++
