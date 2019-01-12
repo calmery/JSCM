@@ -1,10 +1,9 @@
-module IsConvertible (isConvertible) where
+module IsConvertible (Declaration, isConvertible) where
 
-import           NativeFunctionNames (nativeFunctionNames)
-import           Parser              (Expression (..))
+import           Parser (Expression (..))
 import           RIO
-import           Types               (Declaration)
 
+type Declaration = (String, Expression, Bool) -- (Identifier, Expression, Searched)
 type FunctionDeclaration = Declaration
 type FunctionIdentifier = String
 type FunctionExpression = Expression
@@ -13,7 +12,13 @@ type FunctionExpression = Expression
 
 nativeFunctionDeclarations :: [FunctionDeclaration]
 nativeFunctionDeclarations =
-  map (\identifier -> (identifier, JSEmpty, True)) nativeFunctionNames
+  map
+    (\identifier -> (identifier, JSEmpty, True))
+    [ "BigInt"
+    , "Math"
+    , "parseInt"
+    , "console"
+    ]
 
 -- Main
 
@@ -87,8 +92,6 @@ findAndUpdate functionDeclarations localDeclarations = findAndUpdate' functionDe
       else
         findAndUpdate' functionDeclarations localDeclarationsOrigin localDeclarations identifier
 
--- Update Declaration
-
 updateDeclaration :: [Declaration] -> String -> Bool -> [Declaration]
 updateDeclaration [] _ _ = []
 updateDeclaration (declaration@(label, expression, _):declarations) identifier checkStatus =
@@ -96,8 +99,6 @@ updateDeclaration (declaration@(label, expression, _):declarations) identifier c
     (label, expression, checkStatus):declarations
   else
     declaration:updateDeclaration declarations identifier checkStatus
-
--- Check Function Arguments is Pure
 
 checkExpressions :: [FunctionDeclaration] -> [LocalDeclaration] -> [Expression] -> (Bool, [UpdatedLocalDeclaration])
 checkExpressions functionDeclarations localDeclarations [] = (True, localDeclarations)

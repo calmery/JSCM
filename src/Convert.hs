@@ -1,10 +1,9 @@
 module Convert (convert) where
 
-import           IsConvertible (isConvertible)
+import           IsConvertible (Declaration, isConvertible)
 import           Parser        (Expression (..))
 import           RIO
 import           ToString      (toString)
-import           Types         (Declaration)
 
 convert :: Expression -> Expression
 convert (JSProgram expressions) = JSProgram (convert' callExpressionIdentifiers functionDeclarations expressions)
