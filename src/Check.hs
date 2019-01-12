@@ -64,7 +64,7 @@ isPureFunction' _ localDeclarations (JSString _) = (True, localDeclarations)
 isPureFunction' functionDeclarations localDeclarations functionDeclaration@(JSFunctionDeclaration (JSIdentifier identifier) arguments body) =
   let
     updatedFunctionDeclarations = updateDeclaration functionDeclarations identifier True
-    updatedDeclarations = updatedFunctionDeclarations ++ (map (\expression@(JSIdentifier identifier) -> (identifier, expression, True)) arguments)
+    updatedDeclarations = updatedFunctionDeclarations ++ map (\expression@(JSIdentifier identifier) -> (identifier, expression, True)) arguments
   in
     isPureFunction' updatedFunctionDeclarations updatedDeclarations body
 isPureFunction' functionDeclarations localDeclarations (JSReturn expression) = isPureFunction' functionDeclarations localDeclarations expression
@@ -84,7 +84,7 @@ isPureFunction' _ _ expression = error $ show expression
 -- Helpers
 
 findAndUpdate :: JSFunctionDeclarations -> JSLocalDeclarations -> JSFunctionIdentifier -> (Bool, JSUpdatedLocalDeclarations)
-findAndUpdate functionDeclarations localDeclarations identifier = findAndUpdate' functionDeclarations localDeclarations localDeclarations identifier
+findAndUpdate functionDeclarations localDeclarations = findAndUpdate' functionDeclarations localDeclarations localDeclarations
   where
     findAndUpdate' _ localDeclarationsOrigin [] _ = (False, localDeclarationsOrigin)
     findAndUpdate' functionDeclarations localDeclarationsOrigin ((label, expression, alreadyChecked):localDeclarations) identifier =
@@ -107,7 +107,7 @@ updateDeclaration (declaration@(label, expression, _):declarations) identifier c
   if label == identifier then
     (label, expression, checkStatus):declarations
   else
-    declaration:(updateDeclaration declarations identifier checkStatus)
+    declaration:updateDeclaration declarations identifier checkStatus
 
 -- Check Function Arguments is Pure
 
