@@ -1,5 +1,3 @@
-// ECMAScript 5 and ECMAScript 9 (BigInt)
-
 getRandomPrimeNumber(1024);
 
 /* --- Get a prime number. --- */
