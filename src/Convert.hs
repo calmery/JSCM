@@ -25,9 +25,10 @@ convert' callExpressionIdentifiers functionDeclarations (expression@(JSFunctionD
               [JSInternalCode $
                 "var _w=new Worker(URL.createObjectURL(new Blob([`" ++
                 (unwords $ map (\(_, expression, _) -> toString expression) functionDeclarations) ++
-                "onmessage=function(e){" ++ identifier ++ ".apply(this,e.data)};" ++
+                "onmessage=function(e){postMessage(" ++ identifier ++ ".apply(this,e.data));};" ++
                 "`])));" ++
-                "_w.postMessage([" ++ (unwords $ map (\(JSIdentifier identifier) -> identifier ++ ",") arguments) ++ "]);"
+                "_w.postMessage([" ++ (unwords $ map (\(JSIdentifier identifier) -> identifier ++ ",") arguments) ++ "]);" ++
+                "return new Promise(r=>{_w.onmessage=function(e){r(e.data);_w.terminate();};});"
               ]
             )
         else
