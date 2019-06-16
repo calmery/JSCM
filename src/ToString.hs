@@ -12,7 +12,7 @@ toString (JSStringLiteral string) = "\"" ++ string ++ "\""
 toString (JSArrayExpression xs) = "[" ++ (unwords $ map (\x -> toString x ++ ",") xs) ++ "]"
 toString (JSAssignmentExpression identifier body) = toString identifier ++ " = " ++ toString body
 toString (JSBinaryExpression operator x y) = "(" ++ toString x ++ " " ++ operator ++ " " ++ toString y ++ ")"
-toString (JSCallExpression arguments identifier) = toString identifier ++ "(" ++ toStringArray arguments ++ ")"
+toString (JSCallExpression arguments identifier) = toString identifier ++ "(" ++ toStringArray arguments ++ ")\n"
 toString (JSMemberExpression x y) = toString y ++ "[" ++ toString x ++ "]"
 toString (JSObjectMemberExpression x y) = toString y ++ "." ++ toString x
 toString (JSPostfixUpdateExpression operator x) = "(" ++ toString x ++ operator ++ ")"
