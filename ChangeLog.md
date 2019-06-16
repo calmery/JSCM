@@ -1,3 +1,3 @@
-# Changelog for Parser
+# Changelog for jscm
 
 ## Unreleased changes

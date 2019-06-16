@@ -1,5 +1,5 @@
 .stack-work/
-Parser.cabal
+jscm.cabal
 *~
 
 ### https://raw.github.com/github/gitignore/ec246076319913acee4aaeef8caf86b78e586e7a/Global/macOS.gitignore
