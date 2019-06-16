@@ -25,7 +25,7 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - parsec == 3.1.13.0
-- rio == 0.1.6.0
+- rio == 0.1.8.0
 
 library:
   source-dirs: src
@@ -51,4 +51,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - jscm
-    - hspec == 2.6.0
+    - hspec == 2.6.1
