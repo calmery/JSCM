@@ -44,6 +44,7 @@ convert' callExpressionIdentifiers functionDeclarations (expression:expressions)
 getCallExpressionIdentifiers :: [Expression] -> [String]
 getCallExpressionIdentifiers []              = []
 getCallExpressionIdentifiers (callExpression@(JSCallExpression _ (JSIdentifier identifier)):expressions) = identifier:getCallExpressionIdentifiers expressions
+getCallExpressionIdentifiers (assignmentExpression@(JSAssignmentExpression _ (JSCallExpression _ (JSIdentifier identifier))):expressions) = identifier:getCallExpressionIdentifiers expressions
 getCallExpressionIdentifiers (_:expressions) = getCallExpressionIdentifiers expressions
 
 getFunctionDeclarations :: [Expression] -> [Expression]
