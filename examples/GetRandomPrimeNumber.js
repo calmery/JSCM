@@ -1,4 +1,4 @@
-getRandomPrimeNumber(1024);
+console.log("Example: Generate Random Prime Number");
 
 /* --- Get a prime number. --- */
 
@@ -10,7 +10,6 @@ function getRandomPrimeNumber(length) {
   var primeCandidate = getRandomPrimeNumberCandidate(length);
 
   if (isPrime(primeCandidate, 256)) {
-    console.log(primeCandidate);
     return primeCandidate;
   }
 
@@ -187,3 +186,7 @@ function getRandomBigInt(min, max) {
 function getRandomNumber(min, max) {
   return Math.floor(Math.random() * (max + 1 - min)) + min;
 }
+
+var result = getRandomPrimeNumber(1024);
+var message = "Result " + result;
+console.log(message);
