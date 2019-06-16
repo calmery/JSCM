@@ -39,6 +39,24 @@ convert' callExpressionIdentifiers functionDeclarations (expression@(JSFunctionD
   else
     expression
   ):convert' callExpressionIdentifiers functionDeclarations expressions
+convert' callExpressionIdentifiers functionDeclarations (assignmentExpression@(JSAssignmentExpression variableIdentifier expression@(JSCallExpression arguments (JSIdentifier identifier))):expressions) =
+  (if elem identifier callExpressionIdentifiers then
+    let
+      innerExpressions = convert' callExpressionIdentifiers functionDeclarations expressions
+    in
+      [JSCallExpression [
+        JSFunctionDeclaration (JSIdentifier "") [
+          case variableIdentifier of
+            JSVariableDeclaration i ->
+              i
+
+            _ ->
+              variableIdentifier
+        ] (JSBlockStatement innerExpressions)
+      ] (JSObjectMemberExpression (JSIdentifier "then") expression)]
+  else
+    expression:(convert' callExpressionIdentifiers functionDeclarations expressions)
+  )
 convert' callExpressionIdentifiers functionDeclarations (expression:expressions) = expression:convert' callExpressionIdentifiers functionDeclarations expressions
 
 getCallExpressionIdentifiers :: [Expression] -> [String]
