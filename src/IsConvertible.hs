@@ -1,6 +1,6 @@
 module IsConvertible (Declaration, isConvertible) where
 
-import           Parser (Expression (..))
+import           AST (Expression (..))
 import           RIO
 
 type Declaration = (String, Expression, Bool) -- (Identifier, Expression, Searched)

@@ -1,6 +1,6 @@
 module ToString (toString) where
 
-import           Parser (Expression (..))
+import           AST (Expression (..))
 import           RIO
 
 toString :: Expression -> String

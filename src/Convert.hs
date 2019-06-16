@@ -1,7 +1,7 @@
 module Convert (convert) where
 
+import           AST           (Expression (..))
 import           IsConvertible (Declaration, isConvertible)
-import           Parser        (Expression (..))
 import           RIO
 import           ToString      (toString)
 
