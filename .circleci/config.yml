@@ -1,0 +1,47 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: fpco/stack-build:lts-13.25
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - stack-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+
+      - run:
+          command: stack test
+
+      - save_cache:
+          key: stack-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+          paths:
+            - ~/.stack
+
+  build:
+    docker:
+      - image: fpco/stack-build:lts-13.25
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - stack-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+
+      - run:
+          command: stack build
+
+      - save_cache:
+          key: stack-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+          paths:
+            - ~/.stack
+
+workflows:
+  version: 2
+  test-and-build:
+    jobs:
+      - test
+
+      - build:
+          requires:
+            - test
