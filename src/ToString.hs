@@ -10,7 +10,7 @@ toString (JSBooleanLiteral boolean) = if boolean then "true" else "false"
 toString (JSNumberLiteral number) = show number
 toString (JSStringLiteral string) = "\"" ++ string ++ "\""
 toString (JSArrayExpression xs) = "[" ++ (unwords $ map (\x -> toString x ++ ",") xs) ++ "]"
-toString (JSAssignmentExpression identifier body) = toString identifier ++ " = " ++ toString body
+toString (JSAssignmentExpression identifier body) = toString identifier ++ " = " ++ toString body ++ "\n"
 toString (JSBinaryExpression operator x y) = "(" ++ toString x ++ " " ++ operator ++ " " ++ toString y ++ ")"
 toString (JSCallExpression arguments identifier) = toString identifier ++ "(" ++ toStringArray arguments ++ ")\n"
 toString (JSMemberExpression x y) = toString y ++ "[" ++ toString x ++ "]"
