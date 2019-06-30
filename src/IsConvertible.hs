@@ -67,7 +67,7 @@ isReferentiallyTransparentFunction' functionDeclarations localDeclarations (JSIf
 isReferentiallyTransparentFunction' functionDeclarations localDeclarations (JSReturnStatement expression) = isReferentiallyTransparentFunction' functionDeclarations localDeclarations expression
 isReferentiallyTransparentFunction' functionDeclarations localDeclarations functionDeclaration@(JSFunctionDeclaration (JSIdentifier identifier) arguments body) =
   let
-    updatedFunctionDeclarations = updateDeclaration functionDeclarations identifier True
+    updatedFunctionDeclarations = updateDeclaration (functionDeclarations ++ localDeclarations) identifier True
     updatedDeclarations = updatedFunctionDeclarations ++ map (\expression@(JSIdentifier identifier) -> (identifier, expression, True)) arguments
   in
     isReferentiallyTransparentFunction' updatedFunctionDeclarations updatedDeclarations body
