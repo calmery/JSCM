@@ -1,6 +1,6 @@
 module ParserSpec (spec) where
 
-import           Parser      (Expression (..))
+import           AST         (Expression (..))
 import qualified Parser      as P
 import           RIO
 import           Test.Hspec
